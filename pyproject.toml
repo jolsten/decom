@@ -1,0 +1,19 @@
+[project]
+name = "decom"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jonathan Olsten", email = "jolsten@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "lark>=1.2.2",
+]
+
+[project.scripts]
+decom = "decom:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

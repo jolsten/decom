@@ -1,0 +1,36 @@
+// A bunch of words
+start: value*
+
+value: include
+     | measurand
+     | uselist
+     | function
+
+include: "INCLUDE" "=" FILE_PATH
+uselist: NAME "." "USELIST" "=" "{" measurand* "}"
+
+function: name "=" NAME "(" ARG* ")"
+
+param: "[" COMP ("+" COMP)* "]"
+
+name: NAME
+    | NAME "." NAME
+measurand: name "=" param (";" interp (";" euc)?)? ";"?
+interp: INTERP
+euc: "EUC"? "[" NUMBER ("," NUMBER)~0..2 "]"
+
+NAME:  /[a-zA-Z0-9_-]+/
+COMP:  /[0-9\:\-R]+/
+INTERP: "u" | "1c" | "2c"
+FILE_PATH: /.+/
+ARG: /[-a-zA-Z0-9,]+/
+ANY:  /^(?<!INCLUDE|USELIST).+/
+
+// imports
+%import common.ESCAPED_STRING -> STRING
+%import common.NUMBER
+%import common.WS
+%import common.WORD
+
+// Disregard whitespace in text
+%ignore WS
