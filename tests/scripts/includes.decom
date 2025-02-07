@@ -4,7 +4,6 @@ INCLUDE = ./relative/path.decom
 parent1 = function_a(-arg val -arg val)
 parent2.parent1 = function_b(args args)
 
-
 B1 = [1];
 B2 = [2]
 B3 = [3:1-4 + 4];

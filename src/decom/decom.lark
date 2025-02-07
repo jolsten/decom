@@ -11,20 +11,24 @@ uselist: NAME "." "USELIST" "=" "{" measurand* "}"
 
 function: name "=" NAME "(" ARG* ")"
 
-param: "[" COMP ("+" COMP)* "]"
+parameter: "[" COMP ("+" COMP)* "]"
+         | "[" "(" COMP ("+" COMP)* ")" group_operator "]"
 
 name: NAME
     | NAME "." NAME
-measurand: name "=" param (";" interp (";" euc)?)? ";"?
+measurand: name "=" parameter (";" interp (";" euc)?)? ";"?
 interp: INTERP
-euc: "EUC"? "[" NUMBER ("," NUMBER)~0..2 "]"
+euc: "EUC"? "[" FLOAT ("," FLOAT)~0..2 "]"
 
-NAME:  /[a-zA-Z0-9_-]+/
-COMP:  /[0-9\:\-R]+/
+group_operator: "R" | ("++" /\d+/)
+
 INTERP: "u" | "1c" | "2c"
-FILE_PATH: /.+/
-ARG: /[-a-zA-Z0-9,]+/
-ANY:  /^(?<!INCLUDE|USELIST).+/
+FLOAT:      /\d+(?:\.\d+)?(?:e[\+\-]?\d+)?/i
+NAME:       /[a-zA-Z0-9_-]+/
+COMP:       /[0-9\:\-R]+/
+ARG:        /[-a-zA-Z0-9,]+/
+ANY:        /^(?<!INCLUDE|USELIST).+/
+FILE_PATH:  /.+/
 
 // imports
 %import common.ESCAPED_STRING -> STRING
