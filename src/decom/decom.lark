@@ -2,11 +2,11 @@
 start: value*
 
 value: include
-     | measurand
      | uselist
+     | measurand
      | function
 
-include: "INCLUDE" "=" FILE_PATH
+include: "INCLUDE" "=" PATH
 uselist: NAME "." "USELIST" "=" "{" measurand* "}"
 
 function: name "=" NAME "(" ARG* ")"
@@ -23,18 +23,15 @@ euc: "EUC"? "[" FLOAT ("," FLOAT)~0..2 "]"
 group_operator: "R" | ("++" /\d+/)
 
 INTERP: "u" | "1c" | "2c"
-FLOAT:      /\d+(?:\.\d+)?(?:e[\+\-]?\d+)?/i
-NAME:       /[a-zA-Z0-9_-]+/
-COMP:       /[0-9\:\-R]+/
-ARG:        /[-a-zA-Z0-9,]+/
-ANY:        /^(?<!INCLUDE|USELIST).+/
-FILE_PATH:  /.+/
+FLOAT: /\d+(?:\.\d+)?(?:e[\+\-]?\d+)?/i
+NAME:  /[a-zA-Z0-9_-]+/
+COMP:  /[0-9\:\-R]+/
+ARG:   /[-a-zA-Z0-9,]+/
+ANY:   /^(?<!INCLUDE|USELIST).+/
+PATH:  /.+/
 
 // imports
-%import common.ESCAPED_STRING -> STRING
-%import common.NUMBER
 %import common.WS
-%import common.WORD
 
 // Disregard whitespace in text
 %ignore WS
