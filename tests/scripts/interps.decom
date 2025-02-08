@@ -1,0 +1,22 @@
+# Unsigned
+u1 = [1];
+u2 = [1+2];
+u4 = [1+2+3+4];
+u8 = [1+2+3+4+5+6+7+8];
+u2dash = [1-2];
+u4dash = [1-4];
+u8dash = [1-8];
+
+# Twos-Comp
+i1 = [1];2c
+i2 = [1+2];2c
+i4 = [1-4];2c
+i8 = [1-8];2c
+
+# Interp types
+interp_u      = [1+2];u
+interp_sm     = [1+2];sm
+interp_1c     = [1+2];1c
+interp_2c     = [1+2];2c
+interp_ieee32 = [1+2];ieee32
+interp_ieee64 = [1+2];ieee64

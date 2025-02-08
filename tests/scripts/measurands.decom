@@ -1,0 +1,38 @@
+# Building Simple Parameters
+u1      = [1];
+u2_plus = [1+2];
+u4_plus = [1+2+3+4];
+u8_plus = [1+2+3+4+5+6+7+8];
+u2_dash = [1-2];
+u4_dash = [1-4];
+u8_dash = [1-8];
+
+# Some interps
+interp_1 = [1+2];2c
+interp_2 = [1+2];ieee32
+interp_3 = [1+2];ieee64
+
+# Bitspecs
+a = [1:1];
+b = [1:1-4];
+c = [1:4-1];
+d = [1:1-4+2];
+
+# Bit reverse
+e = [1R];
+f = [1:1-4R];
+g = [(1:1-4+2)R];
+
+# Iterator
+iter_1 = [1++1];
+iter_2 = [1++1<16];
+iter_3 = [(1+2)++2<16];
+
+# EUC
+euc_1 = [1];u;[1.0]
+euc_2 = [1];u;euc[1.0, 2.0]
+euc_3 = [1];u;EUC[1.0, 2.0, 3.0]
+euc_4 = [1];2c;Euc[2.0]
+euc_5 = [1];u;euc[1/10]
+euc_6 = [1+2];u;euc[1/2**16]
+euc_7 = [1+2];2c;euc[1/2**15]

@@ -8,38 +8,43 @@ value: include
 
 include: "INCLUDE" "=" PATH
 uselist: NAME "." "USELIST" "=" "{" measurand* "}"
-
 function: name "=" NAME "(" ARG* ")"
-
-comp: COMP comp_op?
-parameter: "[" comp ("+" comp)* iterator? "]"
-         | "[" "(" COMP ("+" COMP)* ")" comp_op? iterator? "]"
-
 name: NAME
     | NAME "." NAME
+
 measurand: name "=" filter? parameter (";" interp (";" euc)?)? ";"?
+parameter: "[" comp ("+" comp)* iterator? "]"
+         | "[" "(" COMP ("+" COMP)* ")" comp_op? iterator? "]"
+comp: COMP comp_op?
+
 interp: INTERP
-euc: EUC_TOK? "[" FLOAT ("," FLOAT)~0..2 "]"
+
+euc: /euc/i? "[" math_expr ("," math_expr)~0..2 "]"
+math_func: MATH_FUNC "(" math_expr ")"
+math_expr: FLOAT (MATH_OP (FLOAT | math_func))*
 
 iterator: "++" INT ("<" INT)?
 filter: FILTER_TOK "(" INT iterator? ")"
 comp_op: COMP_OP
 
-INTERP: "u" | "1c" | "2c"
-
+INTERP: "u" | "sm" | "1c" | "2c" | "ieee32" | "ieee64" | "1750a32" | "1750a48"
 FILTER_TOK: "mfo" | "mfv"
-EUC_TOK: "euc"i
-INT:   /\d+/
-FLOAT: /\d+(?:\.\d+)?(?:e[\+\-]?\d+(?:\.\d+))?/i
-NAME:  /[a-zA-Z0-9_-]+/
-COMP:  /[0-9\:\-]+[R]?/
+INT:     /\d+/
+FLOAT:   /\d+(?:\.\d+)?(?:e[\+\-]?\d+(?:\.\d+)?)?/i
+MATH_OP: "+" | "-" | "*" | "/" | "^" | "**"
+MATH_FUNC: "sin" | "cos" | "tan"
+NAME:    /[a-zA-Z0-9_-]+/
+COMP:    /[0-9\:\-]+[R]?/
 COMP_OP: /R/i
-ARG:   /[-a-zA-Z0-9,]+/
-ANY:   /^(?<!INCLUDE|USELIST).+/
-PATH:  /.+/
+ARG:     /[-a-zA-Z0-9,]+/
+ANY:     /^(?<!INCLUDE|USELIST).+/
+PATH:    /.+/
+
+COMMENT : /#[^\r\n]+/
 
 // imports
 %import common.WS
 
-// Disregard whitespace in text
-%ignore WS
+
+%ignore WS      // Disregard whitespace in text
+%ignore COMMENT // Ignore comments on any single line
