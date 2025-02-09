@@ -10,6 +10,8 @@ from decom.parsers import parameter_parser as parser
     "[1R]",
     "[1:1-4R]",
     "(1-4)R",
+    "1++1",
+    "1++2<16",
 ])
 def test_parser(text: str):
     print(f"Input: {text!r}")

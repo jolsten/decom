@@ -1,17 +1,14 @@
 start: measurand ";"?
 
-_sep{x, sep}: x (sep x)*
-
-measurand: (parameter) | ("[" parameter "]")
-    // | parameter ";" interp 
-    // | parameter ";" interp ";" euc
+measurand: parameter iterator?
+    | "[" parameter iterator? "]"
 
 parameter: component
     | components
     | "(" components ")" REVERSE?
 
 components: component
-    | _sep{component, "+"}
+    | component ("+" component)*
     | INT "-" INT
 
 component: INT ":" INT "-" INT REVERSE?
@@ -19,5 +16,7 @@ component: INT ":" INT "-" INT REVERSE?
     | INT REVERSE?
 
 REVERSE: "R"i
+
+iterator: "++" INT ("<" INT)?
 
 %import common.INT

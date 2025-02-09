@@ -3,50 +3,32 @@ start: value*
 
 value: include
      | uselist
-     | measurand
+     | named_measurand
      | function
 
-_sep{x, sep}: x (sep x)*
-
 include: "INCLUDE" "=" PATH
-uselist: NAME "." "USELIST" "=" "{" measurand* "}"
+uselist: NAME "." "USELIST" "=" "{" named_measurand* "}"
 function: name "=" NAME "(" ARG* ")"
+
 name: NAME
     | NAME "." NAME
-
-measurand: name "=" filter? parameter (";" interp (";" euc)?)? ";"?
-parameter: "[" _sep{comp, "+"} iterator? "]"
-         | "[" "(" COMP ("+" COMP)* ")" comp_op? iterator? "]"
-comp: COMP comp_op?
-
-interp: INTERP
-
-euc: /euc/i? "[" calc__start ("," calc__start)~0..2 "]"
-// math_func: MATH_FUNC "(" math_expr ")"
-// math_expr: FLOAT (MATH_OP (FLOAT | math_func))*
+named_measurand: name "=" filter? measurand__start
 
 iterator: "++" INT ("<" INT)?
 filter: FILTER_TOK "(" INT iterator? ")"
-comp_op: COMP_OP
 
-INTERP: "u" | "sm" | "1c" | "2c" | "ieee32" | "ieee64" | "1750a32" | "1750a48"
 FILTER_TOK: "mfo" | "mfv"
-INT:     /\d+/
-FLOAT:   /\d+(?:\.\d+)?(?:e[\+\-]?\d+(?:\.\d+)?)?/i
-MATH_OP: "+" | "-" | "*" | "/" | "^" | "**"
-MATH_FUNC: "sin" | "cos" | "tan"
 NAME:    /[^\s\.\(\)\[\]\{\}]+/ // Not whitespace, period, (), [], {}
-COMP:    /[0-9\:\-]+[R]?/
-COMP_OP: "R"i
 ARG:     /[-a-zA-Z0-9,]+/
 ANY:     /^(?<!INCLUDE|USELIST).+/
 PATH:    /.+/
-
-COMMENT : /#[^\r\n]+/
+COMMENT: /#[^\r\n]+/
 
 // imports
 %import common.WS
+%import common.INT
 %import .calculator.start -> calc__start
+%import .measurand.start -> measurand__start
 
 %ignore WS      // Disregard whitespace in text
 %ignore COMMENT // Ignore comments on any single line
