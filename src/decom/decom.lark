@@ -3,8 +3,8 @@ start: value*
 
 value: include
      | uselist
-     | named_measurand
      | function
+     | named_measurand
 
 include: "INCLUDE" "=" PATH
 uselist: NAME "." "USELIST" "=" "{" named_measurand* "}"
@@ -17,10 +17,9 @@ named_measurand: name "=" filter? measurand__start
 iterator: "++" INT ("<" INT)?
 filter: FILTER_TOK "(" INT iterator? ")"
 
-FILTER_TOK: "mfo" | "mfv"
+FILTER_TOK: "mfo"i | "mfv"i
 NAME:    /[^\s\.\(\)\[\]\{\}]+/ // Not whitespace, period, (), [], {}
 ARG:     /[-a-zA-Z0-9,]+/
-ANY:     /^(?<!INCLUDE|USELIST).+/
 PATH:    /.+/
 COMMENT: /#[^\r\n]+/
 
