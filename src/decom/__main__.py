@@ -1,10 +1,6 @@
 import pathlib
 import argparse
-from lark import Lark
-
-path = pathlib.Path("src/decom/decom.lark")
-grammar = path.read_text()
-decom_parser = Lark(grammar)
+from decom.parsers import decom_parser
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
