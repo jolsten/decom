@@ -1,0 +1,19 @@
+start: measurand
+
+measurand: parameter__start ";"?
+    | parameter__start ";" interp  ";"?
+    | parameter__start ";" interp  ";" euc ";"?
+
+interp: INTERP
+
+INTERP: "u" | "sm" | "1c" | "2c" 
+    | "ieee32" | "ieee64"
+    | "1750a32" | "1750a48"
+
+euc: "EUC"i? "[" calculator__start ("," calculator__start)~0..2 "]"
+
+%import .calculator.start -> calculator__start
+%import .parameter.start -> parameter__start
+%import common.WS_INLINE
+
+%ignore WS_INLINE

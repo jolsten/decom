@@ -1,8 +1,7 @@
 from typing import Optional, Literal, Union
 import pytest
-import itertools
 from hypothesis import strategies as st, given
-from decom import decom_parser
+from decom.parsers import measurand_parser as parser
 
 VALID_INTERPS = [
     "u",
@@ -47,7 +46,7 @@ def measurands(draw):
     
     return m
 
-@pytest.mark.parametrize("measurand", [
+@pytest.mark.parametrize("text", [
     "[1];",
     "[1-2];1c",
     "[1+2+3];2c",
@@ -57,8 +56,8 @@ def measurands(draw):
     "[1-6];1750a48",
     "[1-8];ieee64",
 ])
-def test_measurands(measurand: str):
-    measurand = f"name = {measurand}\n"
-    print(f"Measurand: {measurand!r}")
-    out = decom_parser.parse(measurand)
-    # print("Output:", out)
+def test_parser(text: str):
+    print(f"Input: {text!r}")
+    tree = parser.parse(text)
+    print("Output:", tree.pretty())
+    assert tree

@@ -1,0 +1,26 @@
+?start: sum+
+
+?sum: product
+    | sum "+" product -> add
+    | sum "-" product -> sub
+
+?product: power
+    | product "*" power -> mul
+    | product "/" power -> div
+
+?power: atom
+    | power ("**" | "^") atom -> pow
+
+?atom: NUMBER    -> number
+    | "-" NUMBER -> neg
+    | "(" sum ")"
+    | "SIN"i "(" sum ")" -> sin
+    | "COS"i "(" sum ")" -> cos
+    | "TAN"i "(" sum ")" -> tan
+    | "DEG2RAD"i "(" sum ")" -> deg2rad
+    | "RAD2DEG"i "(" sum ")" -> rad2deg
+
+%import common.WS_INLINE
+%import common.NUMBER
+
+%ignore WS_INLINE
