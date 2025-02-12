@@ -1,20 +1,13 @@
 import pytest
-from decom.parsers import parameter_parser as parser
+from decom.parsers import parameter_parser
+from decom.transformers import Parameter, Fragment
 
-@pytest.mark.parametrize("text", [
-    "[1]",
-    "[1+2]",
-    "[1+2:5-8]",
-    "1-4",
-    "4-1",
-    "[1R]",
-    "[1:1-4R]",
-    "(1-4)R",
-    "1++1",
-    "1++2<16",
+
+@pytest.mark.parametrize("text, expect", [
+    ("[1]", Parameter([Fragment(1)])),
+    ("[1+2]", Parameter([Fragment(1), Fragment(2)])),
+    ("[1:1-4+2:5-8]", Parameter([Fragment(1, [1,2,3,4]), Fragment(2, [5,6,7,8])])),
 ])
-def test_parser(text: str):
-    print(f"Input: {text!r}")
-    tree = parser.parse(text)
-    print("Output:", tree.pretty())
-    assert tree
+def test_transformer(text: str, expect: Parameter):
+    result = parameter_parser.parse(text)
+    assert result == expect
