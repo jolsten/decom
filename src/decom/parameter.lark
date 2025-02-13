@@ -12,13 +12,13 @@
 
 // [1-4:xf0] == [1:xf0-4]
 
-iterator: up_iterator | dn_iterator
+?iterator: up_iterator | dn_iterator
 up_iterator: "++" int ("<" int)?
 dn_iterator: "--" int ("<" int)?
 
 parameter: "[" all_fragments "]"
     | "[" "(" all_fragments ")" iterator? "]" -> generator_parameter
-    | "[" all_fragments "]" iterator -> supercomm
+    | "[" all_fragments "]" iterator -> supercom_parameter
 
 all_fragments: mod_fragments ("+" mod_fragments)* -> concatenate
 ?mod_fragments: fragments

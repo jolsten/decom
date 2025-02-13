@@ -39,13 +39,15 @@ class Parameter:
     fragments: list[Fragment]
 
 
+@dataclass
 class SupercomParameter:
-    fragments: list[Fragment]
+    parameter: Parameter
     iterator: Iterator
 
 
+@dataclass
 class GeneratorParameter:
-    fragments: list[Fragment]
+    parameter: Parameter
     iterator: Iterator
 
 
