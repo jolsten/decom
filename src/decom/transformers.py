@@ -1,12 +1,23 @@
-from dataclasses import dataclass
-from lark import Transformer, v_args
-from typing import Optional
 import math
+
+from lark import Transformer, v_args
+
+from decom import utils
+from decom.measurand import (
+    Fragment,
+    FragmentConstant,
+    GeneratorParameter,
+    Iterator,
+    Parameter,
+    SupercomParameter,
+)
+
 
 @v_args(inline=True)
 class CalculateTree(Transformer):
-    from operator import add, sub, mul, truediv as div, neg, pow
-    from math import sin, cos, tan
+    from math import cos, sin, tan
+    from operator import add, mul, neg, pow, sub
+    from operator import truediv as div
 
     number = float
 
@@ -17,83 +28,104 @@ class CalculateTree(Transformer):
         return math.pi / 180 * value
 
 
-@dataclass
-class Fragment:
-    word: int
-    bits: Optional[int] = None
-    complement: bool = False
-    reverse: bool = False
-
-    def __eq__(self, other: "Fragment") -> bool:
-        bits_a = self.bits if self.bits is None else sorted(self.bits)
-        bits_b = other.bits if other.bits is None else sorted(other.bits)
-        return all([
-            self.word == other.word,
-            bits_a == bits_b,
-            self.complement == other.complement,
-            self.reverse == other.reverse,
-        ])
-
-@dataclass
-class Iterator:
-    step: int
-    stop: Optional[int] = None
-
-@dataclass
-class Parameter:
-    fragments: list[Fragment]
-    iterator: Optional[Iterator] = None
-
-@dataclass
-class BitwiseOperator:
-    operation: str
-    operand: int
-
-def expand_range(start: int, stop: int) -> list[int]:
-    if start <= stop:
-        return list(range(start, stop + 1))
-    return list(range(start, stop - 1, -1))
-
-
 @v_args(inline=True)
 class ParameterTransformer(Transformer):
     integer = int
+
+    def hex2dec(self, val: str) -> int:
+        return utils.hex2dec(str(val))
+
+    def oct2dec(self, val: str) -> int:
+        return utils.oct2dec(val)
+
+    def bin2dec(self, val: str) -> int:
+        return utils.bin2dec(val)
 
     def bit_range(self, *args) -> list[int]:
         if len(args) == 1:
             return list(args)
         elif len(args) == 2:
-            return expand_range(*args)
+            return utils.irange(*args)
         raise ValueError
-    
-    def word_range(self, *args) -> list[int]:
-        if len(args) == 1:
-            return list(args)
-        elif len(args) == 2:
-            return expand_range(*args)
-        raise ValueError
+
+    def up_iterator(self, *args) -> Iterator:
+        step = args[0]
+        if len(args) == 2:
+            return Iterator(step, args[1])
+        return Iterator(step)
+
+    def dn_iterator(self, *args) -> Iterator:
+        step = -args[0]
+        if len(args) == 2:
+            return Iterator(step, args[1])
+        return Iterator(step)
+
+    def bit_mask(self, val: int) -> list[int]:
+        return utils.bit_mask(val)
+
+    def frag_range_bits_last(
+        self, start: int, stop: int, bits: list[int]
+    ) -> list[Fragment]:
+        return [Fragment(word=word, bits=bits) for word in utils.irange(start, stop)]
+
+    def frag_range_bits_first(
+        self, start: int, bits: list[int], stop: int
+    ) -> list[Fragment]:
+        return [Fragment(word=word, bits=bits) for word in utils.irange(start, stop)]
+
+    def frag_word_with_bits(self, word: int, bits: list[int]) -> list[Fragment]:
+        return [Fragment(word=word, bits=bits)]
+
+    def frag_range_no_bits(self, start: int, stop: int) -> list[Fragment]:
+        return [Fragment(word=word) for word in utils.irange(start, stop)]
+
+    def frag_word_no_bits(self, word: int) -> list[Fragment]:
+        return [Fragment(word=word)]
+
+    def frag_constant(self, token):
+        if token.type == "HEX":
+            size = 4 * len(token)
+            value = utils.hex2dec(token)
+        elif token.type == "OCT":
+            size = 3 * len(token)
+            value = utils.oct2dec(token)
+        elif token.type == "BIN":
+            size = len(token)
+            value = utils.bin2dec(token)
+        return [FragmentConstant(value, size)]
 
     def concatenate(self, *args) -> list[int]:
         out = []
         for arg in args:
             out.extend(arg)
         return out
-    
-    def c_fragments(self, *args) -> list[Fragment]:
-        return self.fragments(*args, complement=True)
-    
-    def r_fragments(self, *args) -> list[Fragment]:
-        return self.fragments(*args, reverse=True)
-    
-    def cr_fragments(self, *args) -> list[Fragment]:
-        return self.fragments(*args, complement=True, reverse=True)
 
-    def fragments(self, *args, reverse: bool = False, complement: bool = False) -> list[Fragment]:
-        word_list = args[0]
-        bit_list = args[1] if len(args) == 2 else None
-        fragments = [Fragment(word, bits=bit_list, complement=complement, reverse=reverse) for word in word_list]
+    def complement(self, fragments: list[Fragment]) -> list[Fragment]:
+        for f in fragments:
+            f.complement = True
+        return fragments
+
+    def reverse(self, fragments: list[Fragment]) -> list[Fragment]:
+        for f in fragments:
+            f.reverse = True
+        return fragments
+
+    def complement_reverse(self, fragments: list[Fragment]) -> list[Fragment]:
+        return self.complement(self.reverse(fragments))
+
+    def mod_fragments(self, fragments: list[Fragment]) -> list[Fragment]:
         return fragments
 
     def parameter(self, *args) -> Parameter:
         fragments = args[0]
         return Parameter(fragments=fragments)
+
+    def supercom_parameter(
+        self, parameter: Parameter, iterator: Iterator
+    ) -> SupercomParameter:
+        return SupercomParameter(parameter, iterator)
+
+    def generator_parameter(
+        self, parameter: Parameter, iterator: Iterator
+    ) -> GeneratorParameter:
+        return GeneratorParameter(parameter=parameter, iterator=iterator)
