@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Literal, Optional
 
 
 @dataclass
@@ -35,23 +35,46 @@ class Iterator:
 
 
 @dataclass
+class BitOperator:
+    mode: Literal["AND", "OR", "XOR"]
+    value: int
+
+
+@dataclass
 class Parameter:
     fragments: list[Fragment]
+    bit_op: Optional[BitOperator] = None
 
 
 @dataclass
 class SupercomParameter:
     parameter: Parameter
     iterator: Iterator
+    bit_op: Optional[BitOperator] = None
 
 
 @dataclass
 class GeneratorParameter:
     parameter: Parameter
     iterator: Iterator
+    bit_op: Optional[BitOperator] = None
+
+
+class Interp:
+    pass
+
+
+class EUC:
+    pass
+
+
+class SamplingStrategy:
+    pass
 
 
 @dataclass
-class BitwiseOperator:
-    operation: str
-    operand: int
+class Measurand:
+    parameter: Parameter
+    interp: Interp
+    euc: EUC
+    ss: SamplingStrategy

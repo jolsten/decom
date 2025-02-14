@@ -1,9 +1,32 @@
 import itertools
 
 import pytest
-from decom.measurand import FragmentConstant
+
+from decom.measurand import FragmentConstant, GeneratorParameter, SupercomParameter
 from decom.parsers import parameter_parser
 from decom.transformers import Fragment, Parameter
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "[5]",
+        "[~5]",
+        "[~5R]",
+        "[5+6]",
+        "[5:1-4+6:5-8R]",
+        "[5:x0FR+6:xF0R]",
+        "[~5]++10",
+        "[95]--10",
+        "[~5]++10<55",
+        "[4+6]++20",
+        "[1+2+3+x00]",
+        "[1+2] XOR x55",
+    ],
+)
+def test_parser(text: str):
+    p = parameter_parser.parse(text)
+    assert isinstance(p, (Parameter, SupercomParameter, GeneratorParameter))
 
 
 @pytest.mark.parametrize(
@@ -49,6 +72,8 @@ def test_transformer(text: str, expect: Parameter):
         "[1-4:8,5-3,1] == [1:b10011101-4] == [1-4:b10011101]",
         "[xFF] == [b11111111]",
         "[o377] == [b011111111]",
+        "[1-4:xf0] == [1:xf0-4]",
+        "[xf0] == ['xf0']",
     ],
 )
 def test_parameters_eq(text: str):

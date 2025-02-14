@@ -1,28 +1,27 @@
-start: measurand
-
-
-!bitwise_operator: ("AND"i | "OR"i | "XOR"i) bit_mask
-
+?start: measurand
 
 measurand: parameter__start ";"?
     | parameter__start ";" interp ";"?
     | parameter__start ";" interp ";" euc ";"?
+    | parameter__start ";" interp ";" euc ";" ss ";"?
 
 interp: INTERP
 
-INTERP: "u"
-    | "sm"
-    | "1c"
-    | "2c"
-    | "ieee32"
-    | "ieee64"
-    | "1750a32"
-    | "1750a48"
+INTERP: "u" | "sm" | "1c" | "2c"
+    | "ieee32" | "ieee64"
+    | "1750a32" | "1750a48"
+    | "ti32" | "ti40"
 
-euc: "EUC"i? "[" calculator__start ("," calculator__start)~0..2 "]"
+calculator: calculator__start
+
+euc: "EUC"i? "[" calculator ("," calculator)~0..2 "]"
+
+ss: ANY
+
+ANY: /[.]+/
 
 %import .calculator.start -> calculator__start
 %import .parameter.start -> parameter__start
-%import common.WS_INLINE
+%import common.WS
 
-%ignore WS_INLINE
+%ignore WS

@@ -1,13 +1,16 @@
 import math
+from typing import Any, Optional
 
-from lark import Transformer, v_args
+from lark import Token, Transformer, v_args
 
 from decom import utils
 from decom.measurand import (
+    BitOperator,
     Fragment,
     FragmentConstant,
     GeneratorParameter,
     Iterator,
+    Measurand,
     Parameter,
     SupercomParameter,
 )
@@ -113,19 +116,50 @@ class ParameterTransformer(Transformer):
     def complement_reverse(self, fragments: list[Fragment]) -> list[Fragment]:
         return self.complement(self.reverse(fragments))
 
+    def bitwise_operator(self, arg: str) -> BitOperator:
+        return BitOperator(mode=arg.type, value=int(arg))
+
     def mod_fragments(self, fragments: list[Fragment]) -> list[Fragment]:
         return fragments
 
-    def parameter(self, *args) -> Parameter:
-        fragments = args[0]
+    def parameter(self, fragments: list[Fragment]) -> Parameter:
         return Parameter(fragments=fragments)
+
+    def parameter_with_mask(
+        self, fragments: list[Fragment], bit_op: BitOperator
+    ) -> Parameter:
+        return Parameter(fragments, bit_op=bit_op)
 
     def supercom_parameter(
         self, parameter: Parameter, iterator: Iterator
     ) -> SupercomParameter:
-        return SupercomParameter(parameter, iterator)
+        return SupercomParameter(parameter, iterator=iterator)
+
+    def supercom_parameter_with_mask(
+        self, parameter: Parameter, bit_op: BitOperator, iterator: Iterator
+    ) -> SupercomParameter:
+        return SupercomParameter(parameter, iterator=iterator, bit_op=bit_op)
 
     def generator_parameter(
         self, parameter: Parameter, iterator: Iterator
     ) -> GeneratorParameter:
         return GeneratorParameter(parameter=parameter, iterator=iterator)
+
+    def generator_parameter_with_mask(
+        self, parameter: Parameter, iterator: Iterator, bit_op: BitOperator
+    ) -> GeneratorParameter:
+        return GeneratorParameter(parameter=parameter, iterator=iterator, bit_op=bit_op)
+
+
+class MeasurandTransformer(Transformer):
+    def measurand(
+        self,
+        parameter: Parameter,
+        interp: Optional[Any] = None,
+        euc: Optional[Any] = None,
+        ss: Optional[Any] = None,
+    ) -> Measurand:
+        return Measurand(parameter=parameter, interp=interp, euc=euc, ss=ss)
+
+    def interp(self, token: Token) -> str:
+        return str(token)
