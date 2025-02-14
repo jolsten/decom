@@ -1,10 +1,15 @@
 // A bunch of words
 start: value*
 
-value: include
-     | uselist
-     | function
-     | named_measurand
+value: directive
+    | include
+    | uselist
+    | function
+    | named_measurand
+
+directive: directive_name "=" WORD
+directive_name: "directive_one"i
+    | "directive_two"i
 
 include: "INCLUDE" "=" PATH
 uselist: NAME "." "USELIST" "=" "{" named_measurand* "}"
@@ -18,16 +23,17 @@ iterator: "++" INT ("<" INT)?
 filter: FILTER_TOK "(" INT iterator? ")"
 
 FILTER_TOK: "mfo"i | "mfv"i
-NAME:    /[^\s\.\(\)\[\]\{\}]+/ // Not whitespace, period, (), [], {}
-ARG:     /[-a-zA-Z0-9,]+/
-PATH:    /.+/
-COMMENT: /#[^\r\n]+/
+COMMENT_SL: /#[^\r\n]+/
+NAME: /[^\s\#\$\;\,\.\(\)\[\]\{\}\<\>]+/ // Not whitespace, period, (), [], {}
+ARG:  /[-a-zA-Z0-9,]+/
+PATH: /.+/
 
 // imports
 %import common.WS
 %import common.INT
+%import common.WORD
 %import .calculator.start -> calc__start
 %import .measurand.start -> measurand__start
 
 %ignore WS      // Disregard whitespace in text
-%ignore COMMENT // Ignore comments on any single line
+%ignore COMMENT_SL // Ignore comments on any single line

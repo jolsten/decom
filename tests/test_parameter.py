@@ -14,6 +14,7 @@ from decom.transformers import Fragment, Parameter
         "[~5]",
         "[~5R]",
         "[5+6]",
+        # "[(5+6)R]",
         "[5:1-4+6:5-8R]",
         "[5:x0FR+6:xF0R]",
         "[~5]++10",

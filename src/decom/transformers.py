@@ -163,3 +163,7 @@ class MeasurandTransformer(Transformer):
 
     def interp(self, token: Token) -> str:
         return str(token)
+
+    def euc(self, token: Token) -> str:
+        print(token)
+        return token

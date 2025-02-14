@@ -70,6 +70,13 @@ def test_interps(interp: str):
     assert isinstance(m, Measurand)
 
 
+@pytest.mark.parametrize("euc", EUCS)
+def test_eucs(euc: str):
+    measurand = f"[1];u;{euc}"
+    m = measurand_parser.parse(measurand)
+    assert isinstance(m, Measurand)
+
+
 @given(cst.measurands())
 def test_measurands(measurand: str):
     print(f"Input: {measurand!r}")
