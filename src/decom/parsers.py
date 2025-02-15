@@ -1,9 +1,10 @@
 from lark import Lark
 
-from decom.transformers import CalculateTree, MeasurandTransformer, ParameterTransformer
+from decom.calculator import Calculator
+from decom.transformers import MeasurandTransformer, ParameterTransformer
 
 calculate_parser = Lark.open(
-    "calculator.lark", rel_to=__file__, parser="lalr", transformer=CalculateTree()
+    "calculator.lark", rel_to=__file__, parser="lalr", transformer=Calculator()
 )
 parameter_parser = Lark.open(
     "parameter.lark",
