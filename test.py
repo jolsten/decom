@@ -1,7 +1,11 @@
+import logging
 import sys
+
+from lark import logger
 
 from decom.parsers import parameter_parser
 
+logger.setLevel(logging.DEBUG)
 # parser = lark.Lark.open("src/decom/parameter.lark", transformer=ParameterTransformer(), parser="lalr")
 
 

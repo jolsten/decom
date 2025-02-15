@@ -5,47 +5,40 @@ up_iterator: "++" int ("<" int)?
 dn_iterator: "--" int ("<" int)?
 
 parameter: "[" all_fragments "]"
-    | "[" all_fragments "]" bit_ops                  -> parameter_with_mask
-    | "[" "(" all_fragments ")" iterator "]" bit_ops -> generator_parameter_with_mask
-    | "[" "(" all_fragments ")" iterator "]"         -> generator_parameter
-    | "[" all_fragments "]" bit_ops iterator         -> supercom_parameter_with_mask
+    | "[" all_fragments "]" bit_op                  -> parameter_with_bitop
+    | "[" "(" all_fragments ")" iterator "]" bit_op -> generator_parameter_with_bitop
+    | "["     all_fragments     iterator "]" bit_op -> generator_parameter_with_bitop
+    | "[" "(" all_fragments ")" iterator "]"        -> generator_parameter
+    | "["     all_fragments     iterator "]"         -> generator_parameter
+    | "[" all_fragments "]" bit_op iterator         -> supercom_parameter_with_bitop
     | "[" all_fragments "]" iterator                 -> supercom_parameter
 
-!bit_ops: aox "x" hex
-    | aox "o" oct
-    | aox "b" bin
 
-?aox: "AND" | "OR" | "XOR"
+!bit_op: ("AND" | "OR" | "XOR") const_value
 
 all_fragments: cr_fragments ("+" cr_fragments)* -> concatenate
 
-// fragments: int -> frag_word_no_bits
-//     | int "-" int ":" bit_spec -> frag_range_bits_last
-//     | int ":" bit_spec "-" int -> frag_range_bits_first
-//     | int ":" bit_spec         -> frag_word_with_bits
-//     | int "-" int              -> frag_range_no_bits
-//     | ("x" HEX | "o" OCT | "b" BIN)         -> frag_constant
-//     | "'" ("x" HEX | "o" OCT | "b" BIN) "'" -> frag_constant
-
 !cr_fragments: "~"? (fragments | constant) "R"?
-
-fragments: int "-" int (":" bit_spec)?  -> fragments_bits_last
-    | int (":" bit_spec) "-" int        -> fragments_bits_first
-    | int (":" bit_spec)?
 
 constant: ("x" HEX | "o" OCT | "b" BIN)
     | "'" ("x" HEX | "o" OCT | "b" BIN) "'"
+
+fragments: int                  -> fragments_single
+    | int "-" int               -> fragments_range
+    | int "-" int ":" bit_spec  -> fragments_bits_last
+    | int ":" bit_spec          -> fragments_bits_last
+    | int ":" bit_spec "-" int  -> fragments_bits_first
 
 ?bit_spec: bit_list
     | bit_mask
 bit_list:  range ("," range)* -> concatenate
 
+?word_spec: range
 range: int "-" int
     | int
 
-bit_mask: "x" hex
-    | "o" oct
-    | "b" bin
+?const_value: "x" hex | "o" oct | "b" bin
+bit_mask: const_value
 
 hex: HEX -> hex2dec
 oct: OCT -> oct2dec
