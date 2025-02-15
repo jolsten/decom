@@ -13,7 +13,6 @@ parameter: "[" all_fragments "]"
     | "[" all_fragments "]" bit_op iterator         -> supercom_parameter_with_bitop
     | "[" all_fragments "]" iterator                 -> supercom_parameter
 
-
 !bit_op: ("AND" | "OR" | "XOR") const_value
 
 all_fragments: cr_fragments ("+" cr_fragments)* -> concatenate

@@ -1,4 +1,3 @@
-import math
 from typing import Any, Optional
 
 from lark import Token, Transformer, v_args
@@ -14,21 +13,6 @@ from decom.measurand import (
     Parameter,
     SupercomParameter,
 )
-
-
-@v_args(inline=True)
-class CalculateTree(Transformer):
-    from math import cos, sin, tan
-    from operator import add, mul, neg, pow, sub
-    from operator import truediv as div
-
-    number = float
-
-    def rad2deg(self, value: float) -> float:
-        return 180 / math.pi * value
-
-    def deg2rad(self, value: float) -> float:
-        return math.pi / 180 * value
 
 
 @v_args(inline=True)
