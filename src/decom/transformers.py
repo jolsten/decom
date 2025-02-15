@@ -36,7 +36,7 @@ class ParameterTransformer(Transformer):
     integer = int
 
     def hex2dec(self, val: str) -> int:
-        return utils.hex2dec(str(val))
+        return utils.hex2dec(val)
 
     def oct2dec(self, val: str) -> int:
         return utils.oct2dec(val)
@@ -56,11 +56,6 @@ class ParameterTransformer(Transformer):
             return Iterator(step, args[1])
         return Iterator(step)
 
-    def bit_ops(self, *args):
-        print("")
-        print(args)
-        return args
-
     def bit_mask(self, val: int) -> list[int]:
         return utils.bit_mask(val)
 
@@ -70,7 +65,6 @@ class ParameterTransformer(Transformer):
         return [start]
 
     def cr_fragments(self, *args) -> list[Fragment]:
-        print("cr_fragments", args)
         complement, reverse = False, False
 
         if args[0] == "~":
