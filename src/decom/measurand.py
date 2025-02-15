@@ -2,8 +2,12 @@ from dataclasses import dataclass
 from typing import Literal, Optional
 
 
+class BaseFragment:
+    pass
+
+
 @dataclass
-class Fragment:
+class Fragment(BaseFragment):
     word: int
     bits: Optional[int] = None
     complement: bool = False
@@ -23,7 +27,7 @@ class Fragment:
 
 
 @dataclass
-class FragmentConstant:
+class FragmentConstant(BaseFragment):
     value: int
     size: int
 

@@ -11,30 +11,36 @@ parameter: "[" all_fragments "]"
     | "[" all_fragments "]" bit_ops iterator         -> supercom_parameter_with_mask
     | "[" all_fragments "]" iterator                 -> supercom_parameter
 
-!bit_ops: and_or_xor "x" hex
-    | and_or_xor "o" oct
-    | and_or_xor "b" bin
+!bit_ops: aox "x" hex
+    | aox "o" oct
+    | aox "b" bin
 
-?and_or_xor: "AND" | "OR" | "XOR"
+?aox: "AND" | "OR" | "XOR"
 
-all_fragments: mod_fragments ("+" mod_fragments)* -> concatenate
-?mod_fragments: fragments
-    | "~" fragments "R"     -> complement_reverse
-    | "~" fragments         -> complement
-    | fragments "R"         -> reverse
+all_fragments: cr_fragments ("+" cr_fragments)* -> concatenate
 
-fragments: int -> frag_word_no_bits
-    | int "-" int ":" bit_spec -> frag_range_bits_last
-    | int ":" bit_spec "-" int -> frag_range_bits_first
-    | int ":" bit_spec         -> frag_word_with_bits
-    | int "-" int              -> frag_range_no_bits
-    | ("x" HEX | "o" OCT | "b" BIN)         -> frag_constant
-    | "'" ("x" HEX | "o" OCT | "b" BIN) "'" -> frag_constant
+// fragments: int -> frag_word_no_bits
+//     | int "-" int ":" bit_spec -> frag_range_bits_last
+//     | int ":" bit_spec "-" int -> frag_range_bits_first
+//     | int ":" bit_spec         -> frag_word_with_bits
+//     | int "-" int              -> frag_range_no_bits
+//     | ("x" HEX | "o" OCT | "b" BIN)         -> frag_constant
+//     | "'" ("x" HEX | "o" OCT | "b" BIN) "'" -> frag_constant
+
+!cr_fragments: "~"? (fragments | constant) "R"?
+
+fragments: int "-" int (":" bit_spec)?  -> fragments_bits_last
+    | int (":" bit_spec) "-" int        -> fragments_bits_first
+    | int (":" bit_spec)?
+
+constant: ("x" HEX | "o" OCT | "b" BIN)
+    | "'" ("x" HEX | "o" OCT | "b" BIN) "'"
 
 ?bit_spec: bit_list
     | bit_mask
-bit_list:  bit_range ("," bit_range)* -> concatenate
-bit_range: int "-" int
+bit_list:  range ("," range)* -> concatenate
+
+range: int "-" int
     | int
 
 bit_mask: "x" hex

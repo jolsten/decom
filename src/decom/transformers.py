@@ -66,26 +66,48 @@ class ParameterTransformer(Transformer):
     def bit_mask(self, val: int) -> list[int]:
         return utils.bit_mask(val)
 
-    def frag_range_bits_last(
-        self, start: int, stop: int, bits: list[int]
-    ) -> list[Fragment]:
+    def range(self, start: int, stop: Optional[int] = None) -> list[int]:
+        if stop is not None:
+            return utils.irange(start, stop)
+        return [start]
+
+    def cr_fragments(self, *args):
+        # print("cr_fragments", args)
+        complement, reverse = False, False
+
+        if args[0] == "~":
+            complement = True
+            args = args[1:]
+
+        if args[-1] == "R":
+            reverse = True
+            args = args[:-1]
+
+        for frag in args[0]:
+            frag: Fragment
+            frag.complement = complement
+            frag.reverse = reverse
+        return args[0]
+
+    def fragments_bits_first(self, *args) -> list[Fragment]:
+        start, bits, stop = args
         return [Fragment(word=word, bits=bits) for word in utils.irange(start, stop)]
 
-    def frag_range_bits_first(
-        self, start: int, bits: list[int], stop: int
-    ) -> list[Fragment]:
+    def fragments_bits_last(self, *args) -> list[Fragment]:
+        if len(args) == 2:
+            start, stop = args
+            bits = None
+        elif len(args) == 3:
+            start, stop, bits = args
+        else:
+            raise ValueError
         return [Fragment(word=word, bits=bits) for word in utils.irange(start, stop)]
 
-    def frag_word_with_bits(self, word: int, bits: list[int]) -> list[Fragment]:
+    def fragments(self, word: int, bits: Optional[list[int]] = None):
+        print("fragments", word, bits)
         return [Fragment(word=word, bits=bits)]
 
-    def frag_range_no_bits(self, start: int, stop: int) -> list[Fragment]:
-        return [Fragment(word=word) for word in utils.irange(start, stop)]
-
-    def frag_word_no_bits(self, word: int) -> list[Fragment]:
-        return [Fragment(word=word)]
-
-    def frag_constant(self, token):
+    def constant(self, token: Token) -> list[FragmentConstant]:
         if token.type == "HEX":
             size = 4 * len(token)
             value = utils.hex2dec(token)
@@ -97,30 +119,28 @@ class ParameterTransformer(Transformer):
             value = utils.bin2dec(token)
         return [FragmentConstant(value, size)]
 
-    def concatenate(self, *args) -> list[int]:
+    def concatenate(self, *args: list[list[Any]]) -> list[Any]:
+        print("concatenate", args)
         out = []
         for arg in args:
             out.extend(arg)
         return out
 
-    def complement(self, fragments: list[Fragment]) -> list[Fragment]:
-        for f in fragments:
-            f.complement = True
-        return fragments
+    # def complement(self, fragments: list[Fragment]) -> list[Fragment]:
+    #     for f in fragments:
+    #         f.complement = True
+    #     return fragments
 
-    def reverse(self, fragments: list[Fragment]) -> list[Fragment]:
-        for f in fragments:
-            f.reverse = True
-        return fragments
+    # def reverse(self, fragments: list[Fragment]) -> list[Fragment]:
+    #     for f in fragments:
+    #         f.reverse = True
+    #     return fragments
 
-    def complement_reverse(self, fragments: list[Fragment]) -> list[Fragment]:
-        return self.complement(self.reverse(fragments))
+    # def complement_reverse(self, fragments: list[Fragment]) -> list[Fragment]:
+    #     return self.complement(self.reverse(fragments))
 
     def bitwise_operator(self, arg: str) -> BitOperator:
         return BitOperator(mode=arg.type, value=int(arg))
-
-    def mod_fragments(self, fragments: list[Fragment]) -> list[Fragment]:
-        return fragments
 
     def parameter(self, fragments: list[Fragment]) -> Parameter:
         return Parameter(fragments=fragments)
