@@ -1,5 +1,5 @@
 import math
-from typing import Callable, Union
+from typing import Union
 
 from lark import Token, Transformer, v_args
 
@@ -76,10 +76,14 @@ def hamdist(a: int, b: int) -> int:
     return f"{a ^ b:b}".count("1")
 
 
-# There should be a way to eliminate most of the boilerplate code in the class below
+# There should be a way to eliminate most of the boilerplate code in the class below.
+#
 # Tried using a decorator assign outer functions that return the inner f(PV) function
 # but it didn't work. Possibly related to how the Transformer class is interacting
 # with dynamically created attributes.
+#
+# Tried moving the decorator until after procedurally adding the attributes after
+# defining the class. Same problem. So probably not related to the v_args decorator.
 @v_args(inline=True)
 class CallableCalculator(Calculator):
     def pv(self, _: Token) -> callable:
@@ -90,15 +94,16 @@ class CallableCalculator(Calculator):
 
     def number(self, token: Token) -> callable:
         if token.type == "INT":
-            return lambda PV: int(PV)
+            return lambda PV: int(token)
         else:
-            return lambda PV: float(PV)
+            return lambda PV: float(token)
 
     def constant(self, token: Token) -> float:
         if token == "E":
             return lambda PV: math.e
         if token == "PI":
             return lambda PV: math.pi
+        raise ValueError
 
     def neg(self, a: callable) -> callable:
         def wrapper(PV):
@@ -107,34 +112,16 @@ class CallableCalculator(Calculator):
         return wrapper
 
     def float(self, a) -> callable:
-        if isinstance(a, str):
+        def f(PV):
+            return float(a(PV))
 
-            def f(PV):
-                return float(a)
-
-            return f
-        elif isinstance(a, Callable):
-
-            def f(PV):
-                return float(a(PV))
-
-            return f
-        raise TypeError
+        return f
 
     def integer(self, a) -> callable:
-        if isinstance(a, str):
+        def f(PV):
+            return int(a(PV))
 
-            def f(PV):
-                return int(a)
-
-            return f
-        elif isinstance(a, Callable):
-
-            def f(PV):
-                return int(a(PV))
-
-            return f
-        raise TypeError
+        return f
 
     fix = integer
 
@@ -174,13 +161,13 @@ class CallableCalculator(Calculator):
 
         return f
 
-    def round(self, a: callable, b: callable) -> callable:
+    def round(self, a: callable) -> callable:
         def f(PV):
             return round(a(PV))
 
         return f
 
-    def floor(self, a: callable, b: callable) -> callable:
+    def floor(self, a: callable) -> callable:
         def f(PV):
             return math.floor(a(PV))
 
@@ -264,7 +251,7 @@ class CallableCalculator(Calculator):
 
         return f
 
-    def ln(self, a: callable) -> callable:
+    def log(self, a: callable) -> callable:
         def f(PV):
             return math.log(a(PV))
 

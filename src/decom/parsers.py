@@ -1,6 +1,6 @@
 from lark import Lark
 
-from decom.calculator import Calculator
+from decom.calculator import Calculator, CallableCalculator
 from decom.symcalc import PVCalculator
 from decom.transformers import MeasurandTransformer, ParameterTransformer
 
@@ -9,6 +9,9 @@ calculate_parser = Lark.open(
 )
 symcalc_parser = Lark.open(
     "symcalc.lark", rel_to=__file__, parser="lalr", transformer=PVCalculator()
+)
+pv_calc_parser = Lark.open(
+    "func_calc.lark", rel_to=__file__, parser="lalr", transformer=CallableCalculator()
 )
 parameter_parser = Lark.open(
     "parameter.lark",

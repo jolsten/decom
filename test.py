@@ -18,7 +18,9 @@ def main():
     except ValueError:
         pv = float(sys.argv[2])
 
+    print("text =", text)
     func = parser.parse(text)
+    print(func)
     print(func(pv))
 
 
