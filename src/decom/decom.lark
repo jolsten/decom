@@ -32,7 +32,6 @@ PATH: /.+/
 %import common.WS
 %import common.INT
 %import common.WORD
-%import .calculator.start -> calc__start
 %import .measurand.start -> measurand__start
 
 %ignore WS      // Disregard whitespace in text

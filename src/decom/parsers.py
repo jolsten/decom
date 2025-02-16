@@ -21,4 +21,4 @@ measurand_parser = Lark.open(
     parser="lalr",
     transformer=MeasurandTransformer(),
 )
-# decom_parser = Lark.open("decom.lark", rel_to=__file__)
+decom_parser = Lark.open("decom.lark", rel_to=__file__)
