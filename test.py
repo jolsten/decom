@@ -3,12 +3,10 @@ import sys
 
 from lark import Lark, logger
 
-from decom.calculator import CallableCalculator
+from decom.calculator import PVCalculator
 
 logger.setLevel(logging.DEBUG)
-parser = Lark.open(
-    "src/decom/func_calc.lark", transformer=CallableCalculator(), parser="lalr"
-)
+parser = Lark.open("src/decom/calc_pv.lark", transformer=PVCalculator(), parser="lalr")
 
 
 def main():

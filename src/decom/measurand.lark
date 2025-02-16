@@ -12,7 +12,9 @@ INTERP: "u" | "sm" | "1c" | "2c"
     | "1750a32" | "1750a48"
     | "ti32" | "ti40"
 
-calculator: calculator__start
+?calculator: calc_simple | calc_pv
+?calc_simple.1: calc_simple__start
+?calc_pv.0: calc_pv__start
 
 euc: "EUC"i? "[" calculator ("," calculator)~0..2 "]"
 
@@ -20,7 +22,8 @@ ss: ANY
 
 ANY: /[.]+/
 
-%import .calculator.start -> calculator__start
+%import .calc_simple.start -> calc_simple__start
+%import .calc_pv.start -> calc_pv__start
 %import .parameter.start -> parameter__start
 %import common.WS
 

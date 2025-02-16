@@ -85,7 +85,7 @@ def hamdist(a: int, b: int) -> int:
 # Tried moving the decorator until after procedurally adding the attributes after
 # defining the class. Same problem. So probably not related to the v_args decorator.
 @v_args(inline=True)
-class CallableCalculator(Calculator):
+class PVCalculator(Transformer):
     def pv(self, _: Token) -> callable:
         def f(PV):
             return PV
