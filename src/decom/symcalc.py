@@ -31,7 +31,8 @@ class PVCalculator(Calculator):
         return PV
 
     def float(self, v):
-        raise NotImplementedError
+        return sympy.Float(v)
+        # raise NotImplementedError
 
     fix = floor
 
@@ -41,7 +42,7 @@ class PVCalculator(Calculator):
     def nxtwo(self, v):
         return sympy.ceiling(sympy.log(v, 2))
 
-    def sqrt(self, v) -> sympy.Symbol:
+    def sqrt(self, v):
         return v ** (1 / 2)
 
     def log10(self, v):

@@ -1,21 +1,25 @@
 import logging
 import sys
 
-from lark import logger
+from lark import Lark, logger
 
-from decom.parsers import parameter_parser
+from decom.calculator import CallableCalculator
 
 logger.setLevel(logging.DEBUG)
-# parser = lark.Lark.open("src/decom/parameter.lark", transformer=ParameterTransformer(), parser="lalr")
+parser = Lark.open(
+    "src/decom/func_calc.lark", transformer=CallableCalculator(), parser="lalr"
+)
 
 
 def main():
     text = sys.argv[1]
-    tree = parameter_parser.parse(text)
     try:
-        print(tree.pretty())
-    except AttributeError:
-        print(tree)
+        pv = int(sys.argv[2])
+    except ValueError:
+        pv = float(sys.argv[2])
+
+    func = parser.parse(text)
+    print(func(pv))
 
 
 if __name__ == "__main__":
