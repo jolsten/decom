@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import Callable
 
 from lark import Lark, logger
 
@@ -18,8 +19,10 @@ def main():
 
     print("text =", text)
     func = parser.parse(text)
-    print(func)
-    print(func(pv))
+    if isinstance(func, Callable):
+        print("func(pv) =", func(pv))
+    else:
+        print("func =", func)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 import math
-from typing import Union
+from typing import Callable, Union
 
 from lark import Token, Transformer, v_args
 
@@ -61,11 +61,11 @@ def nxtwo(val: Number) -> int:
 
 
 def deg(val: Number) -> float:
-    return math.pi / 180 * val
+    return 180 / math.pi * val
 
 
 def rad(val: Number) -> float:
-    return 180 / math.pi * val
+    return math.pi / 180 * val
 
 
 def tento(val: Number) -> Number:
@@ -74,6 +74,9 @@ def tento(val: Number) -> Number:
 
 def hamdist(a: int, b: int) -> int:
     return f"{a ^ b:b}".count("1")
+
+
+CN = Union[Number, Callable]
 
 
 # There should be a way to eliminate most of the boilerplate code in the class below.
@@ -92,188 +95,356 @@ class PVCalculator(Transformer):
 
         return f
 
-    def number(self, token: Token) -> callable:
+    def number(self, token: Token) -> Number:
         if token.type == "INT":
-            return lambda PV: int(token)
+            return int(token)
         else:
-            return lambda PV: float(token)
+            return float(token)
 
     def constant(self, token: Token) -> float:
         if token == "E":
-            return lambda PV: math.e
+            return math.e
         if token == "PI":
-            return lambda PV: math.pi
+            return math.pi
         raise ValueError
 
-    def neg(self, a: callable) -> callable:
-        def wrapper(PV):
-            return -a(PV)
+    def neg(self, a: CN) -> CN:
+        if isinstance(a, Callable):
 
-        return wrapper
+            def wrapper(PV):
+                return -a(PV)
 
-    def float(self, a) -> callable:
-        def f(PV):
-            return float(a(PV))
+            return wrapper
+        return -a
 
-        return f
+    def float(self, a: CN) -> CN:
+        if isinstance(a, Callable):
 
-    def integer(self, a) -> callable:
-        def f(PV):
-            return int(a(PV))
+            def f(PV):
+                return float(a(PV))
 
-        return f
+            return f
+        return float(a)
+
+    def integer(self, a: CN) -> CN:
+        if isinstance(a, Callable):
+
+            def f(PV):
+                return int(a(PV))
+
+            return f
+        return int(a)
 
     fix = integer
 
-    def add(self, a: callable, b: callable) -> callable:
-        def f(PV):
-            return a(PV) + b(PV)
+    def add(self, a: CN, b: CN) -> CN:
+        if isinstance(a, Callable) and isinstance(b, Callable):
 
-        return f
+            def f(PV):
+                return a(PV) + b(PV)
 
-    def sub(self, a: callable, b: callable) -> callable:
-        def f(PV):
-            return a(PV) - b(PV)
+            return f
+        elif isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return a(PV) + b
 
-    def mul(self, a: callable, b: callable) -> callable:
-        def f(PV):
-            return a(PV) * b(PV)
+            return f
+        elif isinstance(b, Callable):
 
-        return f
+            def f(PV):
+                return a + b(PV)
 
-    def div(self, a: callable, b: callable) -> callable:
-        def f(PV):
-            return a(PV) / b(PV)
+            return f
+        return a + b
 
-        return f
+    def sub(self, a: CN, b: CN) -> CN:
+        if isinstance(a, Callable) and isinstance(b, Callable):
 
-    def pow(self, a: callable, b: callable) -> callable:
-        def f(PV):
-            return a(PV) ** b(PV)
+            def f(PV):
+                return a(PV) - b(PV)
 
-        return f
+            return f
+        elif isinstance(a, Callable):
+
+            def f(PV):
+                return a(PV) - b
+
+            return f
+        elif isinstance(b, Callable):
+
+            def f(PV):
+                return a - b(PV)
+
+            return f
+        return a - b
+
+    def mul(self, a: CN, b: CN) -> CN:
+        if isinstance(a, Callable) and isinstance(b, Callable):
+
+            def f(PV):
+                return a(PV) * b(PV)
+
+            return f
+        elif isinstance(a, Callable):
+
+            def f(PV):
+                return a(PV) * b
+
+            return f
+        elif isinstance(b, Callable):
+
+            def f(PV):
+                return a * b(PV)
+
+            return f
+        return a * b
+
+    def div(self, a: CN, b: CN) -> CN:
+        if isinstance(a, Callable) and isinstance(b, Callable):
+
+            def f(PV):
+                return a(PV) / b(PV)
+
+            return f
+        elif isinstance(a, Callable):
+
+            def f(PV):
+                return a(PV) / b
+
+            return f
+        elif isinstance(b, Callable):
+
+            def f(PV):
+                return a / b(PV)
+
+            return f
+        return a / b
+
+    def pow(self, a: CN, b: CN) -> CN:
+        if isinstance(a, Callable) and isinstance(b, Callable):
+
+            def f(PV):
+                return a(PV) ** b(PV)
+
+            return f
+        elif isinstance(a, Callable):
+
+            def f(PV):
+                return a(PV) ** b
+
+            return f
+        elif isinstance(b, Callable):
+
+            def f(PV):
+                return a ** b(PV)
+
+            return f
+        return a**b
 
     def exp(self, a: callable) -> callable:
-        def f(PV):
-            return math.e ** a(PV)
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.e ** a(PV)
 
-    def round(self, a: callable) -> callable:
-        def f(PV):
-            return round(a(PV))
+            return f
+        return math.e**a
 
-        return f
+    def round(self, a: CN) -> CN:
+        if isinstance(a, Callable):
 
-    def floor(self, a: callable) -> callable:
-        def f(PV):
-            return math.floor(a(PV))
+            def f(PV):
+                return round(a(PV))
 
-        return f
+            return f
+        return round(a)
 
-    def ceil(self, a: callable) -> callable:
-        def f(PV):
-            return math.ceil(a(PV))
+    def floor(self, a: CN) -> CN:
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.floor(a(PV))
+
+            return f
+        return math.floor(a)
+
+    def ceil(self, a: CN) -> CN:
+        if isinstance(a, Callable):
+
+            def f(PV):
+                return math.ceil(a(PV))
+
+            return f
+        return math.ceil(a)
 
     def nxtwo(self, a: callable) -> callable:
-        def f(PV):
-            return nxtwo(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return nxtwo(a(PV))
+
+            return f
+        return nxtwo(a)
 
     def sin(self, a: callable) -> callable:
-        def f(PV):
-            return math.sin(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.sin(a(PV))
+
+            return f
+        return math.sin(a)
 
     def cos(self, a: callable) -> callable:
-        def f(PV):
-            return math.cos(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.cos(a(PV))
+
+            return f
+        return math.cos(a)
 
     def tan(self, a: callable) -> callable:
-        def f(PV):
-            return math.tan(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.tan(a(PV))
+
+            return f
+        return math.tan(a)
 
     def asin(self, a: callable) -> callable:
-        def f(PV):
-            return math.asin(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.asin(a(PV))
+
+            return f
+        return math.asin(a)
 
     def acos(self, a: callable) -> callable:
-        def f(PV):
-            return math.acos(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.acos(a(PV))
+
+            return f
+        return math.acos(a)
 
     def atan(self, a: callable) -> callable:
-        def f(PV):
-            return math.atan(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.atan(a(PV))
 
-    def atan2(self, a: callable, b: callable) -> callable:
-        def f(PV):
-            return math.atan2(a(PV), b(PV))
+            return f
+        return math.atan(a)
 
-        return f
+    def atan2(self, a: callable, b: callable) -> CN:
+        if isinstance(a, Callable) and isinstance(b, Callable):
+
+            def f(PV):
+                return math.atan2(a(PV), b(PV))
+
+            return f
+        elif isinstance(a, Callable):
+
+            def f(PV):
+                return math.atan2(a(PV), b)
+
+            return f
+        elif isinstance(b, Callable):
+
+            def f(PV):
+                return math.atan2(a, b(PV))
+
+            return f
+        return math.atan2(a, b)
 
     def deg(self, a: callable) -> callable:
-        def f(PV):
-            return a(PV) * 180 / math.pi
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return deg(a(PV))
+
+            return f
+        return deg(a)
 
     def rad(self, a: callable) -> callable:
-        def f(PV):
-            return a(PV) * math.pi / 180
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return rad(a(PV))
+
+            return f
+        return rad(a)
 
     def abs(self, a: callable) -> callable:
-        def f(PV):
-            return abs(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return abs(a(PV))
+
+            return f
+        return abs(a)
 
     def tento(self, a: callable) -> callable:
-        def f(PV):
-            return tento(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return tento(a(PV))
+
+            return f
+        return tento(a)
 
     def log(self, a: callable) -> callable:
-        def f(PV):
-            return math.log(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.log(a(PV))
+
+            return f
+        return math.log(a)
 
     def log10(self, a: callable) -> callable:
-        def f(PV):
-            return math.log10(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.log10(a(PV))
+
+            return f
+        return math.log10(a)
 
     def sqrt(self, a: callable) -> callable:
-        def f(PV):
-            return math.sqrt(a(PV))
+        if isinstance(a, Callable):
 
-        return f
+            def f(PV):
+                return math.sqrt(a(PV))
+
+            return f
+        return math.sqrt(a)
 
     def hamdist(self, a: callable, b: callable) -> callable:
-        def f(PV):
-            return hamdist(a(PV), b(PV))
+        if isinstance(a, Callable) and isinstance(b, Callable):
 
-        return f
+            def f(PV):
+                return hamdist(a(PV), b(PV))
+
+            return f
+        elif isinstance(a, Callable):
+
+            def f(PV):
+                return hamdist(a(PV), b)
+
+            return f
+        elif isinstance(b, Callable):
+
+            def f(PV):
+                return hamdist(a, b(PV))
+
+            return f
+        return hamdist(a, b)
 
     def max(self, *args: list[callable]) -> callable:
         def f(PV):
