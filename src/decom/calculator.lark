@@ -1,4 +1,4 @@
-?start: sum+
+?start: sum
 
 ?sum: product
     | sum "+" product -> add
@@ -13,12 +13,10 @@
 
 !constant: "PI" | "E" -> constant
 
-number: NUMBER
-
-?atom: PV -> pv
-    | number
-    | constant
+?atom: NUMBER -> number
     | "-" atom -> neg
+    | PV -> pv
+    | constant
     | "(" sum ")"
     | "float"i "(" sum ")" -> float
     | "fix"i   "(" sum ")" -> fix
@@ -49,13 +47,8 @@ number: NUMBER
 _csv{x}: x ("," x)*
 
 PV: "PV"
-// Force INT priority over FLOAT
-INTEGER.1: INT
-FLOAT.0: NUMBER
-
 
 %import common.WS_INLINE
-%import common.INT
 %import common.NUMBER
 
 %ignore WS_INLINE

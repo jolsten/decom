@@ -46,9 +46,9 @@ class Calculator(Transformer):
         return f
 
     def number(self, token: Token) -> Number:
-        if token.type == "INT":
+        try:
             return int(token)
-        else:
+        except ValueError:
             return float(token)
 
     def constant(self, token: Token) -> float:
