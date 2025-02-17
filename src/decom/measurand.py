@@ -3,11 +3,15 @@ from dataclasses import dataclass
 from typing import Any, Callable, Optional, Union
 
 import numpy as np
-from lark import Token, Transformer
+from lark import Token, Transformer, v_args
 from numpy.typing import NDArray
 
 from decom.calculator import Number
 from decom.parameter import BaseParameter
+
+
+class BaseInterpretation:
+    pass
 
 
 class Interp:
@@ -74,6 +78,7 @@ class Measurand:
     ss: SamplingStrategy
 
 
+@v_args(inline=True)
 class MeasurandTransformer(Transformer):
     def measurand(
         self,
