@@ -4,10 +4,10 @@ from typing import Callable
 
 from lark import Lark, logger
 
-from decom.calculator import PVCalculator
+from decom.parsers import Calculator
 
 logger.setLevel(logging.DEBUG)
-parser = Lark.open("src/decom/calc_pv.lark", transformer=PVCalculator(), parser="lalr")
+parser = Lark.open("src/decom/calculator.lark", transformer=Calculator(), parser="lalr")
 
 
 def main():

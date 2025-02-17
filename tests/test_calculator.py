@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from decom.parsers import calculate_parser, pv_calc_parser
+from decom.parsers import calculator_parser
 
 PI = math.pi
 
@@ -47,7 +47,7 @@ PI = math.pi
     ],
 )
 def test_parser(text: str, expect: float):
-    value = calculate_parser.parse(text)
+    value = calculator_parser.parse(text)
     assert value == pytest.approx(expect)
 
 
@@ -71,7 +71,7 @@ def test_parser(text: str, expect: float):
         ("round(PV/3)", lambda pv: round(pv / 3)),
         ("floor(PV/2)", lambda pv: math.floor(pv / 2)),
         ("ceil(PV/2)", lambda pv: math.ceil(pv / 2)),
-        ("nxtwo(PV+1.5)", lambda pv: math.ceil(math.log(pv + 1.5) / math.log(2))),
+        ("nxtwo(PV+1.5)", lambda pv: 2 ** math.ceil(math.log(pv + 1.5) / math.log(2))),
         ("PV*sin(PI/2)", lambda pv: pv),
         ("PV*cos(PI/2)", lambda pv: pv * 0),
         ("PV*tan(PI/4)", lambda pv: pv * 1),
@@ -92,6 +92,6 @@ def test_parser(text: str, expect: float):
     ],
 )
 def test_callable_parser(text: str, func: callable):
-    out = pv_calc_parser.parse(text)
+    out = calculator_parser.parse(text)
     for pv in range(10):
         assert func(pv) == pytest.approx(out(pv))

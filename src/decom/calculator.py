@@ -6,58 +6,8 @@ from lark import Token, Transformer, v_args
 Number = Union[int, float]
 
 
-@v_args(inline=True)
-class Calculator(Transformer):
-    from math import (
-        acos,
-        asin,
-        atan,
-        atan2,
-        ceil,
-        cos,
-        exp,
-        floor,
-        log,
-        log10,
-        sin,
-        sqrt,
-        tan,
-    )
-    from operator import abs, add, mul, neg, pow, sub
-    from operator import truediv as div
-
-    number = float
-    max = max
-    min = min
-    fix = floor
-
-    def float(self, val: Number) -> float:
-        return float(val)
-
-    def round(self, val: Number) -> int:
-        return round(val)
-
-    def constant(self, token: Token) -> float:
-        if token == "E":
-            return math.e
-        if token == "PI":
-            return math.pi
-
-    def rad(self, value: float) -> float:
-        return math.pi / 180 * value
-
-    def deg(self, value: float) -> float:
-        return 180 / math.pi * value
-
-    def nxtwo(self, value: Number) -> int:
-        return 2 ** math.ceil(math.log2(value))
-
-    def tento(self, value: float) -> float:
-        return 10**value
-
-
 def nxtwo(val: Number) -> int:
-    return math.ceil(math.log(val, 2))
+    return 2 ** math.ceil(math.log(val, 2))
 
 
 def deg(val: Number) -> float:
@@ -88,8 +38,8 @@ CN = Union[Number, Callable]
 # Tried moving the decorator until after procedurally adding the attributes after
 # defining the class. Same problem. So probably not related to the v_args decorator.
 @v_args(inline=True)
-class PVCalculator(Transformer):
-    def pv(self, _: Token) -> callable:
+class Calculator(Transformer):
+    def pv(self, _: Token) -> CN:
         def f(PV):
             return PV
 
@@ -242,7 +192,7 @@ class PVCalculator(Transformer):
             return f
         return a**b
 
-    def exp(self, a: callable) -> callable:
+    def exp(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -278,7 +228,7 @@ class PVCalculator(Transformer):
             return f
         return math.ceil(a)
 
-    def nxtwo(self, a: callable) -> callable:
+    def nxtwo(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -287,7 +237,7 @@ class PVCalculator(Transformer):
             return f
         return nxtwo(a)
 
-    def sin(self, a: callable) -> callable:
+    def sin(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -296,7 +246,7 @@ class PVCalculator(Transformer):
             return f
         return math.sin(a)
 
-    def cos(self, a: callable) -> callable:
+    def cos(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -305,7 +255,7 @@ class PVCalculator(Transformer):
             return f
         return math.cos(a)
 
-    def tan(self, a: callable) -> callable:
+    def tan(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -314,7 +264,7 @@ class PVCalculator(Transformer):
             return f
         return math.tan(a)
 
-    def asin(self, a: callable) -> callable:
+    def asin(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -323,7 +273,7 @@ class PVCalculator(Transformer):
             return f
         return math.asin(a)
 
-    def acos(self, a: callable) -> callable:
+    def acos(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -332,7 +282,7 @@ class PVCalculator(Transformer):
             return f
         return math.acos(a)
 
-    def atan(self, a: callable) -> callable:
+    def atan(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -341,7 +291,7 @@ class PVCalculator(Transformer):
             return f
         return math.atan(a)
 
-    def atan2(self, a: callable, b: callable) -> CN:
+    def atan2(self, a: CN, b: CN) -> CN:
         if isinstance(a, Callable) and isinstance(b, Callable):
 
             def f(PV):
@@ -362,7 +312,7 @@ class PVCalculator(Transformer):
             return f
         return math.atan2(a, b)
 
-    def deg(self, a: callable) -> callable:
+    def deg(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -371,7 +321,7 @@ class PVCalculator(Transformer):
             return f
         return deg(a)
 
-    def rad(self, a: callable) -> callable:
+    def rad(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -380,7 +330,7 @@ class PVCalculator(Transformer):
             return f
         return rad(a)
 
-    def abs(self, a: callable) -> callable:
+    def abs(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -389,7 +339,7 @@ class PVCalculator(Transformer):
             return f
         return abs(a)
 
-    def tento(self, a: callable) -> callable:
+    def tento(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -398,7 +348,7 @@ class PVCalculator(Transformer):
             return f
         return tento(a)
 
-    def log(self, a: callable) -> callable:
+    def log(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -407,7 +357,7 @@ class PVCalculator(Transformer):
             return f
         return math.log(a)
 
-    def log10(self, a: callable) -> callable:
+    def log10(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -416,7 +366,7 @@ class PVCalculator(Transformer):
             return f
         return math.log10(a)
 
-    def sqrt(self, a: callable) -> callable:
+    def sqrt(self, a: CN) -> CN:
         if isinstance(a, Callable):
 
             def f(PV):
@@ -425,7 +375,7 @@ class PVCalculator(Transformer):
             return f
         return math.sqrt(a)
 
-    def hamdist(self, a: callable, b: callable) -> callable:
+    def hamdist(self, a: CN, b: CN) -> CN:
         if isinstance(a, Callable) and isinstance(b, Callable):
 
             def f(PV):
@@ -446,20 +396,40 @@ class PVCalculator(Transformer):
             return f
         return hamdist(a, b)
 
-    def max(self, *args: list[callable]) -> callable:
-        def f(PV):
-            return max([f(PV) for f in args])
+    def max(self, *args: list[CN]) -> CN:
+        if any([isinstance(a, Callable) for a in args]):
 
-        return f
+            def f(PV):
+                a = [f(PV) for f in args if isinstance(f, Callable)]
+                b = [x for x in args if not isinstance(x, Callable)]
+                return max(a + b)
 
-    def min(self, *args: list[callable]) -> callable:
-        def f(PV):
-            return min([f(PV) for f in args])
+            return f
 
-        return f
+        return max(args)
 
-    def if_(self, a: callable, b: callable, c: callable) -> callable:
-        def wrapper(PV):
-            return b(PV) if a(PV) else c(PV)
+    def min(self, *args: list[CN]) -> CN:
+        if any([isinstance(a, Callable) for a in args]):
 
-        return wrapper
+            def f(PV):
+                a = [f(PV) for f in args if isinstance(f, Callable)]
+                b = [x for x in args if not isinstance(x, Callable)]
+                return min(a + b)
+
+            return f
+
+        return min(args)
+
+    def if_(self, a: CN, b: CN, c: CN) -> CN:
+        args = [a, b, c]
+        if any(isinstance(x, Callable) for x in args):
+
+            def f(PV):
+                a = [f(PV) for f in args if isinstance(f, Callable)]
+                b = [x for x in args if not isinstance(x, Callable)]
+                a, b, c = a + b
+                return b if a else c
+
+            return f
+
+        return b if a else c

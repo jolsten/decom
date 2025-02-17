@@ -1,13 +1,10 @@
 from lark import Lark
 
-from decom.calculator import Calculator, PVCalculator
+from decom.calculator import Calculator
 from decom.transformers import MeasurandTransformer, ParameterTransformer
 
-calculate_parser = Lark.open(
-    "calc_simple.lark", rel_to=__file__, parser="lalr", transformer=Calculator()
-)
-pv_calc_parser = Lark.open(
-    "calc_pv.lark", rel_to=__file__, parser="lalr", transformer=PVCalculator()
+calculator_parser = Lark.open(
+    "calculator.lark", rel_to=__file__, parser="lalr", transformer=Calculator()
 )
 parameter_parser = Lark.open(
     "parameter.lark",
