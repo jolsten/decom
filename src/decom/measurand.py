@@ -1,67 +1,9 @@
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Any, Optional
 
+from lark import Token, Transformer
 
-class BaseFragment:
-    pass
-
-
-@dataclass
-class Fragment(BaseFragment):
-    word: int
-    bits: Optional[int] = None
-    complement: bool = False
-    reverse: bool = False
-
-    def __eq__(self, other: "Fragment") -> bool:
-        bits_a = self.bits if self.bits is None else sorted(self.bits)
-        bits_b = other.bits if other.bits is None else sorted(other.bits)
-        return all(
-            [
-                self.word == other.word,
-                bits_a == bits_b,
-                self.complement == other.complement,
-                self.reverse == other.reverse,
-            ]
-        )
-
-
-@dataclass
-class FragmentConstant(BaseFragment):
-    value: int
-    size: int
-
-
-@dataclass
-class Iterator:
-    step: int
-    stop: Optional[int] = None
-
-
-@dataclass
-class BitOperator:
-    mode: Literal["AND", "OR", "XOR"]
-    value: int
-
-
-@dataclass
-class Parameter:
-    fragments: list[Fragment]
-    bit_op: Optional[BitOperator] = None
-
-
-@dataclass
-class SupercomParameter:
-    parameter: Parameter
-    iterator: Iterator
-    bit_op: Optional[BitOperator] = None
-
-
-@dataclass
-class GeneratorParameter:
-    parameter: Parameter
-    iterator: Iterator
-    bit_op: Optional[BitOperator] = None
+from decom.parameter import BaseParameter
 
 
 class Interp:
@@ -78,7 +20,25 @@ class SamplingStrategy:
 
 @dataclass
 class Measurand:
-    parameter: Parameter
+    parameter: BaseParameter
     interp: Interp
     euc: EUC
     ss: SamplingStrategy
+
+
+class MeasurandTransformer(Transformer):
+    def measurand(
+        self,
+        parameter: BaseParameter,
+        interp: Optional[Any] = None,
+        euc: Optional[Any] = None,
+        ss: Optional[Any] = None,
+    ) -> Measurand:
+        return Measurand(parameter=parameter, interp=interp, euc=euc, ss=ss)
+
+    def interp(self, token: Token) -> str:
+        return str(token)
+
+    def euc(self, token: Token) -> str:
+        print(token)
+        return token

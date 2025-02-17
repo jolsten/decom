@@ -2,9 +2,14 @@ import itertools
 
 import pytest
 
-from decom.measurand import FragmentConstant, GeneratorParameter, SupercomParameter
+from decom.parameter import (
+    Fragment,
+    FragmentConstant,
+    GeneratorParameter,
+    Parameter,
+    SupercomParameter,
+)
 from decom.parsers import parameter_parser
-from decom.transformers import Fragment, Parameter
 
 
 @pytest.mark.parametrize(
