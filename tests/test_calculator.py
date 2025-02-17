@@ -44,6 +44,8 @@ PI = math.pi
         ("ln(E)", 1),
         ("log(100)", 2),
         ("sqrt(4)", 2),
+        ("if(1,2,3)", 2),
+        ("if(0,2,3)", 3),
     ],
 )
 def test_parser(text: str, expect: float):
@@ -89,9 +91,13 @@ def test_parser(text: str, expect: float):
         ("ln(PV+1)", lambda pv: math.log(pv + 1)),
         ("log(PV+1)", lambda pv: math.log10(pv + 1)),
         ("PV*sqrt(4)", lambda pv: pv * 2),
+        ("if(0,PV,1)", lambda pv: 1),
+        ("if(1,PV,0)", lambda pv: pv),
     ],
 )
 def test_callable_parser(text: str, func: callable):
+    print(f"text = {text!r}")
     out = calculator_parser.parse(text)
     for pv in range(10):
+        print(f"pv = {pv} --> func(pv) = {func(pv)} =?= out(pv) = {out(pv)}")
         assert func(pv) == pytest.approx(out(pv))

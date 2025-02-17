@@ -425,11 +425,15 @@ class Calculator(Transformer):
         if any(isinstance(x, Callable) for x in args):
 
             def f(PV):
-                a = [f(PV) for f in args if isinstance(f, Callable)]
-                b = [x for x in args if not isinstance(x, Callable)]
-                a, b, c = a + b
-                return b if a else c
+                vals = []
+                for x in args:
+                    if isinstance(x, Callable):
+                        vals.append(x(PV))
+                    else:
+                        vals.append(x)
+                a, b, c = vals
+                return b if a > 0 else c
 
             return f
 
-        return b if a else c
+        return b if a > 0 else c
