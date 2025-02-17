@@ -5,6 +5,8 @@ from lark import Token, Transformer, v_args
 
 Number = Union[int, float]
 
+CN = Union[Number, Callable]
+
 
 def nxtwo(val: Number) -> int:
     return 2 ** math.ceil(math.log(val, 2))
@@ -24,9 +26,6 @@ def tento(val: Number) -> Number:
 
 def hamdist(a: int, b: int) -> int:
     return f"{a ^ b:b}".count("1")
-
-
-CN = Union[Number, Callable]
 
 
 # There should be a way to eliminate most of the boilerplate code in the class below.
