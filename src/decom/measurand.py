@@ -7,7 +7,7 @@ from lark import Token, Transformer, v_args
 from numpy.typing import NDArray
 
 from decom.calculator import Number
-from decom.parameter import BaseParameter
+from decom.parameter import Parameter
 
 
 class BaseInterpretation:
@@ -72,7 +72,7 @@ class SamplingStrategy:
 
 @dataclass
 class Measurand:
-    parameter: BaseParameter
+    parameter: Parameter
     interp: Interp
     euc: BaseEUC
     ss: SamplingStrategy
@@ -82,7 +82,7 @@ class Measurand:
 class MeasurandTransformer(Transformer):
     def measurand(
         self,
-        parameter: BaseParameter,
+        parameter: Parameter,
         interp: Optional[Any] = None,
         euc: Optional[Any] = None,
         ss: Optional[Any] = None,
