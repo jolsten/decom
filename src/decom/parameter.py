@@ -24,7 +24,7 @@ class Parameter:
 @dataclass
 class FragmentWord(Fragment):
     word: int
-    bits: Optional[tuple[int, int]] = None
+    bits: Optional[list[int]] = None
     complement: bool = False
     reverse: bool = False
     word_size: Optional[int] = None
@@ -32,23 +32,29 @@ class FragmentWord(Fragment):
     one_based: bool = True
 
     _idx: int = field(init=False, repr=False)
-    _mask: int = field(init=False, repr=False)
-    _shift: int = field(init=False, repr=False)
+    _mask_shift: list[tuple[int, int]] = field(init=False, repr=False)
     _size: int = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        self._idx = self.word
-        if self.one_based:
-            self._idx += -1
-
-        # self._calculate_size()
+        self._idx = self.word - int(self.one_based)
 
         if self.bits is not None:
-            self._mask, self._shift = utils.bits_to_mask_and_shift(self.bits)
+            self._size = len(self.bits)
+
+            self._bit_ranges = utils.bit_list_to_ranges(self.bits)
+            self._mask_shift = []
+            for bit_range in self._bit_ranges:
+                self._mask_shift.append(utils.bits_to_mask_and_shift(bit_range))
 
     def __str__(self) -> str:
         if self.bits:
-            s = f"{self.word}:{self.bits[0]}-{self.bits[1]}"
+            bit_ranges = []
+            for a, b in utils.bit_list_to_ranges(self.bits):
+                if a == b:
+                    bit_ranges.append(str(a))
+                else:
+                    bit_ranges.append(f"{a}-{b}")
+            s = f"""{self.word}:{",".join(bit_ranges)}"""
         else:
             s = f"{self.word}"
 
@@ -88,7 +94,7 @@ class FragmentWord(Fragment):
         return NotImplemented
 
     def build(self, data: UintXArray) -> UintXArray:
-        result = data[:, self._idx].flatten()
+        result = data[:, self.word - int(self.one_based)].flatten()
 
         if self.word_size is None:
             self.word_size = data.word_size
@@ -98,10 +104,12 @@ class FragmentWord(Fragment):
                 msg = f"data.word_size={data.word_size} does not match fragment.word_size={self.word_size}"
                 raise ValueError(msg)
 
-            result = np.bitwise_and(result, self._mask)
-            result = np.bitwise_right_shift(result, self._shift)
+            for mask, shift in self._mask_shift:
+                print("mask, shift =", mask, shift)
+                result = np.bitwise_and(result, mask)
+                result = np.bitwise_right_shift(result, shift)
 
-            frag_size = abs(self.bits[1] - self.bits[0]) + 1
+            frag_size = len(self.bits)
         else:
             frag_size = data.word_size
 

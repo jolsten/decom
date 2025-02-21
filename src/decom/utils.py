@@ -74,3 +74,24 @@ def reverse_bits(x: NDArray, bits: int) -> NDArray:
     for i in range(bits):
         result |= ((x >> i) & 1) << (bits - 1 - i)
     return result
+
+
+def bit_list_to_ranges(bit_list: list[int]) -> list[tuple[int, int]]:
+    """Converts a list of integers into a list of tuples which represent the (inclusive) ranges for the list of integers.
+
+    Args:
+        bit_list (list[int]): The list of bits to consider.
+
+    Returns:
+        list[tuple[int, int]]
+    """
+    r = [[None, None]]
+    for bit in sorted(bit_list):
+        if r[-1][1] is not None and bit - r[-1][1] > 1:
+            r.append([None, None])
+
+        if r[-1][0] is None:
+            r[-1][0] = bit
+        r[-1][1] = bit
+
+    return [(a, b) for a, b in r]

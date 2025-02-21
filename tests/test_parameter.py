@@ -23,32 +23,31 @@ for word_size in [8, 10, 12]:
         (8, FragmentWord(word=1, bits=None), 1),
         (8, FragmentWord(word=64, bits=None), 64),
         (8, FragmentWord(word=128, bits=None), 128),
-        (8, FragmentWord(word=0x00, bits=(1, 1)), 0),
-        (8, FragmentWord(word=0xFF, bits=(1, 1)), 1),
-        (8, FragmentWord(word=0x0F, bits=(1, 4)), 0xF),
-        (8, FragmentWord(word=0x0F, bits=(5, 8)), 0x0),
-        (8, FragmentWord(word=0xF0, bits=(1, 4)), 0x0),
-        (8, FragmentWord(word=0xF0, bits=(5, 8)), 0xF),
+        (8, FragmentWord(word=0x00, bits=[1, 1]), 0),
+        (8, FragmentWord(word=0xFF, bits=[1, 1]), 1),
+        (8, FragmentWord(word=0x0F, bits=[1, 2, 3, 4]), 0xF),
+        (8, FragmentWord(word=0x0F, bits=[5, 6, 7, 8]), 0x0),
+        (8, FragmentWord(word=0xF0, bits=[1, 2, 3, 4]), 0x0),
+        (8, FragmentWord(word=0xF0, bits=[5, 6, 7, 8]), 0xF),
         (8, FragmentWord(word=256, bits=None), 0),
-        (8, FragmentWord(word=255, bits=(1, 2)), 3),
-        (8, FragmentWord(word=255, bits=(1, 4)), 15),
-        (8, FragmentWord(word=255, bits=(1, 6)), 63),
-        (8, FragmentWord(word=255, bits=(1, 8)), 255),
+        (8, FragmentWord(word=255, bits=[1, 2]), 3),
+        (8, FragmentWord(word=255, bits=[1, 2, 3, 4]), 15),
+        (8, FragmentWord(word=255, bits=[1, 2, 3, 4, 5, 6]), 63),
+        (8, FragmentWord(word=255, bits=[1, 2, 3, 4, 5, 6, 7, 8]), 255),
         (10, FragmentWord(word=1, bits=None), 1),
         (10, FragmentWord(word=256, bits=None), 256),
         (10, FragmentWord(word=1024, bits=None), 0),
-        (10, FragmentWord(word=0b0111111110, bits=(2, 9)), 0b11111111),
+        (
+            10,
+            FragmentWord(word=0b0111111110, bits=[2, 3, 4, 5, 6, 7, 8, 9]),
+            0b11111111,
+        ),
     ],
 )
 def test_fragment_word_build(word_size: int, frag: FragmentWord, expected: int):
     data = SAMPLE_DATA[word_size]
     out = frag.build(data)
     print("frag =", frag)
-    try:
-        print("frag._mask  =", frag._mask)
-        print("frag._shift =", frag._shift)
-    except AttributeError:
-        pass
     print("out =", out)
     print("expected =", expected)
     assert out.tolist() == [expected] * NUM_FRAMES
@@ -94,6 +93,7 @@ def test_parameter_build(word_size: int, param: str, expected: int):
     "word_size, text, p",
     [
         (8, "[1++1<17]", [f"[{i + 1}]" for i in range(16)]),
+        (10, "[1:2-9++1<513]", [f"[{i + 1}:2-9]" for i in range(512)]),
     ],
 )
 def test_generator_parameter(word_size: int, text: str, p: list[str]):

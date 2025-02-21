@@ -32,9 +32,7 @@ fragments: int                  -> fragments_single
     | bit_mask
 bit_list:  word_spec ("," word_spec)* -> concatenate
 
-// ?word_spec: range
-word_spec: int "-" int
-    | int
+?word_spec: range
 range: int "-" int
     | int
 
