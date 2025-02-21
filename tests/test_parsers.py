@@ -2,18 +2,14 @@ import itertools
 
 import pytest
 
-from decom.array import UintXArray
 from decom.parameter import (
-    Fragment,
+    BasicParameter,
     FragmentConstant,
+    FragmentWord,
     GeneratorParameter,
-    Parameter,
     SupercomParameter,
 )
 from decom.parsers import parameter_parser
-
-SAMPLE_DATA_8 = UintXArray(range(1, 2**8 + 1), word_size=8)
-SAMPLE_DATA_10 = UintXArray(range(1, 2**10 + 1), word_size=10)
 
 
 @pytest.mark.parametrize(
@@ -36,36 +32,43 @@ SAMPLE_DATA_10 = UintXArray(range(1, 2**10 + 1), word_size=10)
 )
 def test_parser(text: str):
     p = parameter_parser.parse(text)
-    assert isinstance(p, (Parameter, SupercomParameter, GeneratorParameter))
+    assert isinstance(p, (BasicParameter, SupercomParameter, GeneratorParameter))
 
 
 @pytest.mark.parametrize(
     "text, expect",
     [
-        ("[1]", Parameter([Fragment(1)])),
-        ("[1+2]", Parameter([Fragment(1), Fragment(2)])),
-        ("[1-2]", Parameter([Fragment(1), Fragment(2)])),
-        ("[2-1]", Parameter([Fragment(2), Fragment(1)])),
+        ("[1]", BasicParameter([FragmentWord(1)])),
+        ("[1+2]", BasicParameter([FragmentWord(1), FragmentWord(2)])),
+        ("[1-2]", BasicParameter([FragmentWord(1), FragmentWord(2)])),
+        ("[2-1]", BasicParameter([FragmentWord(2), FragmentWord(1)])),
         (
             "[1:1-4+2:5-8]",
-            Parameter([Fragment(1, [1, 2, 3, 4]), Fragment(2, [5, 6, 7, 8])]),
-        ),
-        ("[~1]", Parameter([Fragment(word=1, complement=True)])),
-        (
-            "[~1-2]",
-            Parameter(
-                [Fragment(word=1, complement=True), Fragment(word=2, complement=True)]
+            BasicParameter(
+                [FragmentWord(1, [1, 2, 3, 4]), FragmentWord(2, [5, 6, 7, 8])]
             ),
         ),
-        ("[1R]", Parameter([Fragment(1, reverse=True)])),
-        ("[xF]", Parameter([FragmentConstant(15, 4)])),
+        ("[~1]", BasicParameter([FragmentWord(word=1, complement=True)])),
+        (
+            "[~1-2]",
+            BasicParameter(
+                [
+                    FragmentWord(word=1, complement=True),
+                    FragmentWord(word=2, complement=True),
+                ]
+            ),
+        ),
+        ("[1R]", BasicParameter([FragmentWord(1, reverse=True)])),
+        ("[xF]", BasicParameter([FragmentConstant(15, 4)])),
         (
             "[xF+1+xF]",
-            Parameter([FragmentConstant(15, 4), Fragment(1), FragmentConstant(15, 4)]),
+            BasicParameter(
+                [FragmentConstant(15, 4), FragmentWord(1), FragmentConstant(15, 4)]
+            ),
         ),
     ],
 )
-def test_transformer(text: str, expect: Parameter):
+def test_transformer(text: str, expect: BasicParameter):
     result = parameter_parser.parse(text)
     assert result == expect
 

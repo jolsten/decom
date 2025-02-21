@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from decom.array import SizedArray
+from decom.array import UintXArray
 
 NUM_FRAMES = 10
 
@@ -18,7 +18,7 @@ NUM_FRAMES = 10
 )
 def test_array_invert(word_size: int, input: int, output: int):
     data = np.array([input] * NUM_FRAMES, dtype="uint8")
-    array = SizedArray(data, word_size=word_size)
+    array = UintXArray(data, word_size=word_size)
     out = np.invert(array)
     print(array, f"word_size={array.word_size}")
     assert out.tolist() == [output] * NUM_FRAMES
