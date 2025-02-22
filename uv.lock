@@ -27,6 +27,7 @@ dependencies = [
     { name = "hypothesis" },
     { name = "lark" },
     { name = "numpy" },
+    { name = "typeconvert" },
 ]
 
 [package.dev-dependencies]
@@ -39,6 +40,7 @@ requires-dist = [
     { name = "hypothesis", specifier = ">=6.125.2" },
     { name = "lark", specifier = ">=1.2.2" },
     { name = "numpy", specifier = ">=2.2.3" },
+    { name = "typeconvert", specifier = "==1.0.0rc1" },
 ]
 
 [package.metadata.requires-dev]
@@ -143,4 +145,21 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f23394729afe52f3bf7adec04bf9ed2c820b39e19299111/sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88", size = 30594 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575 },
+]
+
+[[package]]
+name = "typeconvert"
+version = "1.0.0rc1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b7/2d/9941f8c88239635de684878e9dc8ef02bbce41af646d18e4a97421b934b7/typeconvert-1.0.0rc1.tar.gz", hash = "sha256:a7305192f789295c9b71dbaf600e96533544d1c906bef4292e09ec150f1558a2", size = 5100720 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/50/63/d2434eee12541d339fc2d47ec643acb31ce37b288ce2b3cda6418c256767/typeconvert-1.0.0rc1-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:498a5aa0bd09411d4ad09adc22a09061caea4d48c67325d24fbfa3e395eddf6a", size = 70679 },
+    { url = "https://files.pythonhosted.org/packages/e4/85/3f42045dda8dbab53f7453863bdac38323d30e37197c2d82167ff6181f96/typeconvert-1.0.0rc1-cp313-cp313-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:58e09c2493c9389bd29247a5f90df6873623645ce461e1951ab99df22e80df48", size = 70459 },
+    { url = "https://files.pythonhosted.org/packages/fe/80/1993d5229d9eaa07691953962ea286e7bd289b5499b97a851b2de89a573d/typeconvert-1.0.0rc1-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:750caa3bceea954ed40e3810cfca3dee3840cffb7a566b5379a3db3f5c4531fe", size = 72114 },
+    { url = "https://files.pythonhosted.org/packages/78/16/45ed71f9c167743467bc7c621c972907a3f3d7494b4ff6d51332f7fba7cd/typeconvert-1.0.0rc1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:ec0586972c8b29010d14af52cc8638a10535a24a58cd704a0d3020b032ceb869", size = 69391 },
+    { url = "https://files.pythonhosted.org/packages/61/90/fe722e983da8db63de192ff38fa327ca35255cad05e07cd7932cf1fa8336/typeconvert-1.0.0rc1-cp313-cp313-win32.whl", hash = "sha256:1a7b058244870dfe8c7be1bb86e048b652898d6c196070cf64817d8b3505ba9b", size = 43133 },
+    { url = "https://files.pythonhosted.org/packages/2c/4f/2d1e63b4fb89d874ee3b05553499a20b24044738eee71a6b6fb5b05e7424/typeconvert-1.0.0rc1-cp313-cp313-win_amd64.whl", hash = "sha256:19be5893e97c934233a2d6b6716097957a00f968114fe98f0dadd7c8977daf4a", size = 44038 },
 ]

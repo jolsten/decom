@@ -11,6 +11,7 @@ dependencies = [
     "hypothesis>=6.125.2",
     "lark>=1.2.2",
     "numpy>=2.2.3",
+    "typeconvert==1.0.0rc1",
 ]
 
 [project.scripts]

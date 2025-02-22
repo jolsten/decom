@@ -1,5 +1,6 @@
+import abc
 from dataclasses import dataclass, field
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union, override
 
 import numpy as np
 from lark import Token, Transformer, v_args
@@ -12,8 +13,30 @@ class UnknownSizeException(ValueError):
     pass
 
 
-class Fragment:
-    pass
+class Fragment(abc.ABC):
+    complement: bool
+    reverse: bool
+
+    def build(self, data: UintXArray, /, offset: int = 0) -> UintXArray:
+        """Build the specified Fragment.
+
+        Notes
+        -----
+        For `FragmentWord`, extract the bits specified by `Fragment.bits`
+        from the word (column) specified by `Fragment.word`.
+
+        For `FragmentConstant`, build a constant scalar of the appropriate size.
+
+        Parameters
+        ----------
+        data
+            The input data array. This should be a 2-D array with a `word_size` attribute.
+
+        Returns
+        -------
+        UintXArray
+            The constructed fragment.
+        """
 
 
 class Parameter:
@@ -70,6 +93,7 @@ class FragmentWord(Fragment):
             )
         return NotImplemented
 
+    @override
     def build(self, data: UintXArray, /, offset: int = 0) -> UintXArray:
         result = data[:, self.word - int(self.one_based) + offset].flatten()
 
@@ -144,8 +168,9 @@ class FragmentConstant(Fragment):
         if self.reverse:
             self.value = utils.reverse_bits(self.value, self.size)
 
-    def build(self, data: UintXArray) -> np.unsignedinteger:
-        return self.value
+    @override
+    def build(self, data: UintXArray) -> UintXArray:
+        return UintXArray(self.value, word_size=self.size)
 
 
 @dataclass
@@ -248,21 +273,15 @@ class BasicParameter(Parameter):
         result = np.zeros(data.shape[0], dtype=dtype)
 
         for frag_idx, frag in enumerate(self.fragments):
-            # Determine the fragment size
-            if isinstance(frag, FragmentConstant):
-                frag_size = frag.size
-            elif isinstance(frag, FragmentWord):
-                if frag.bits is None:
-                    frag_size = data.word_size
-                else:
-                    frag_size = (frag.bits[1] - frag.bits[0]) + 1
+            # Build the fragment
+            tmp = frag.build(data, offset=offset)
 
-            # Shift the previous result left by the current fragment size
+            # Shift the previous result left by the fragment size
             if frag_idx != 0:
-                result = np.left_shift(result, frag_size)
+                result = np.left_shift(result, tmp.word_size)
 
             # Add the fragment value
-            result += frag.build(data, offset=offset)
+            result += tmp
 
         if self.bit_op:
             result = self.bit_op._func(result, self.bit_op.value)
@@ -323,19 +342,6 @@ class SupercomParameter(GeneratorParameter):
         results = super().build(data)
         return results
 
-    # def __post_init__(self) -> None:
-    #     # For decrementing generators, the "stop before" must be 0
-    #     if self.iterator.stop is None and self.iterator.step < 0:
-    #         self.iterator.stop = 0
-
-    # def build(self, data: UintXArray) -> UintXArray:
-    #     if self.word_size is None:
-    #         self.word_size = data.word_size
-    #     elif self.word_size != data.word_size:
-    #         raise ValueError
-
-    #     results = []
-
 
 @v_args(inline=True)
 class ParameterTransformer(Transformer):
@@ -387,7 +393,8 @@ class ParameterTransformer(Transformer):
             args = args[:-1]
 
         for frag in args[0]:
-            frag: Fragment
+            if not isinstance(frag, Fragment):
+                raise TypeError
             frag.complement = complement
             frag.reverse = reverse
         return args[0]
