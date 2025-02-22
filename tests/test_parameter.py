@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from decom.parameter import (
+from decom.measurand import (
     FragmentConstant,
     FragmentWord,
     GeneratorParameter,

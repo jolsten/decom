@@ -2,7 +2,7 @@ import itertools
 
 import pytest
 
-from decom.parameter import (
+from decom.measurand import (
     BasicParameter,
     FragmentConstant,
     FragmentWord,
