@@ -1,24 +1,39 @@
 import numpy as np
 import pytest
 
+from decom import utils
 from decom.array import UintXArray
 
 NUM_FRAMES = 10
 
 
 @pytest.mark.parametrize(
-    "word_size, input, output",
+    "text",
     [
-        (8, 0b00000000, 0b11111111),
-        (8, 0b00001111, 0b11110000),
-        (8, 0b11110000, 0b00001111),
-        (8, 0b11111111, 0b00000000),
-        (4, 0b00001111, 0b00000000),
+        "0000",
+        "0101",
+        "1010",
+        "1111",
+        "00000000",
+        "00001111",
+        "11110000",
+        "11111111",
+        "0000000000000000",
+        "0101010101010101",
+        "1010101010101010",
+        "1111111111111111",
     ],
 )
-def test_array_invert(word_size: int, input: int, output: int):
-    data = np.array([input] * NUM_FRAMES, dtype="uint8")
+def test_array_invert(text: str):
+    input_ = int(text, base=2)
+    word_size = len(text)
+
+    # Substitute 0 -> 1, 1 -> 0 (with an intermediate placeholder "a")
+    expected = text.replace("0", "a").replace("1", "0").replace("a", "1")
+    expected = int(expected, base=2)
+
+    data = np.array([input_] * NUM_FRAMES, dtype=utils.word_size_to_uint(word_size))
     array = UintXArray(data, word_size=word_size)
     out = np.invert(array)
     print(array, f"word_size={array.word_size}")
-    assert out.tolist() == [output] * NUM_FRAMES
+    assert out.tolist() == [expected] * NUM_FRAMES
