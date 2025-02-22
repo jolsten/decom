@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 
-from decom.array import UintXArray
 from decom.parameter import (
     FragmentConstant,
     FragmentWord,
@@ -10,13 +9,7 @@ from decom.parameter import (
 )
 from decom.parsers import parameter_parser
 
-NUM_FRAMES = 10
-SAMPLE_DATA = {}
-for word_size in [8, 10, 12]:
-    SAMPLE_DATA[word_size] = UintXArray(
-        [[x % 2**word_size for x in range(1, 2**word_size + 1)]] * NUM_FRAMES,
-        word_size=word_size,
-    )
+from .conftest import NUM_FRAMES, SAMPLE_DATA
 
 
 @pytest.mark.parametrize(

@@ -4,7 +4,7 @@ import pytest
 from decom import utils
 from decom.array import UintXArray
 
-NUM_FRAMES = 10
+from .conftest import NUM_FRAMES
 
 
 @pytest.mark.parametrize(
@@ -36,4 +36,5 @@ def test_array_invert(text: str):
     array = UintXArray(data, word_size=word_size)
     out = np.invert(array)
     print(array, f"word_size={array.word_size}")
+    assert out.word_size == word_size
     assert out.tolist() == [expected] * NUM_FRAMES
