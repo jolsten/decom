@@ -1,9 +1,11 @@
 import lark
 from lark import Lark
 
-from decom.calculator import CalculatorTransformer
-from decom.measurand import MeasurandTransformer
-from decom.parameter import ParameterTransformer
+from decom.parsers import (
+    CalculatorTransformer,
+    MeasurandTransformer,
+    ParameterTransformer,
+)
 
 calculator_parser = Lark.open(
     "calculator.lark",

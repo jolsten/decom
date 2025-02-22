@@ -9,7 +9,7 @@ from decom.measurand import (
 )
 from decom.parsers import parameter_parser
 
-from .conftest import NUM_FRAMES, SAMPLE_DATA
+from ..conftest import NUM_FRAMES, SAMPLE_DATA
 
 
 @pytest.mark.parametrize(

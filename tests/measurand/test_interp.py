@@ -2,7 +2,8 @@ import pytest
 
 from decom.array import UintXArray
 from decom.measurand import Interp
-from tests.test_parameter import NUM_FRAMES
+
+from ..conftest import NUM_FRAMES
 
 
 @pytest.mark.parametrize(
