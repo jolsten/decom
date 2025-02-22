@@ -32,7 +32,7 @@ class UintXArray(np.ndarray):
 
         if context is not None:
             func, args, out_i = context
-            input_args = args[: func.nin]
+            # input_args = args[: func.nin]
 
             if func is np.invert:
                 # Ensure the inverted result doesn't contain bits which should be unused

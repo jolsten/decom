@@ -65,7 +65,7 @@ def reverse_bits(x: NDArray, bits: int) -> NDArray:
 
     Args:
         x (int or numpy.ndarray): The integer(s) to reverse.
-        bits (int): The number of bits to consider (default is 32).
+        bits (int): The number of bits to consider.
 
     Returns:
         int or numpy.ndarray: The bit-reversed integer(s).

@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from decom.array import UintXArray
@@ -5,6 +6,7 @@ from decom.parameter import (
     FragmentConstant,
     FragmentWord,
     GeneratorParameter,
+    SupercomParameter,
 )
 from decom.parsers import parameter_parser
 
@@ -94,16 +96,38 @@ def test_parameter_build(word_size: int, param: str, expected: int):
     [
         (8, "[1++1<17]", [f"[{i + 1}]" for i in range(16)]),
         (10, "[1:2-9++1<513]", [f"[{i + 1}:2-9]" for i in range(512)]),
+        (8, "[1++32]", [f"[{i + 1}]" for i in range(0, 256, 32)]),
+        (8, "[1++64]", [f"[{i + 1}]" for i in range(0, 256, 64)]),
+        (10, "[1:2-9++64]", [f"[{i + 1}:2-9]" for i in range(0, 1024, 64)]),
     ],
 )
 def test_generator_parameter(word_size: int, text: str, p: list[str]):
     gp = parameter_parser.parse(text)
     assert isinstance(gp, GeneratorParameter)
 
-    _ = gp.build(SAMPLE_DATA[word_size])
+    results = gp.build(SAMPLE_DATA[word_size])
 
-    expected = [parameter_parser.parse(t) for t in p]
-    for a, b in zip(gp._parameters, expected):
-        print(a, b)
+    ep = [parameter_parser.parse(a) for a in p]
+    expected = np.array([a.build(SAMPLE_DATA[word_size]) for a in ep]).T
 
-    assert gp._parameters == expected
+    for a, b in zip(results, expected):
+        assert a.tolist() == b.tolist()
+
+
+@pytest.mark.parametrize(
+    "word_size, text, num_cols, range_",
+    [
+        (8, "[1]++32", 8, range(1, 257, 32)),
+    ],
+)
+def test_supercom_parameter(word_size: int, text: str, num_cols: int, range_: range):
+    sp = parameter_parser.parse(text)
+    assert isinstance(sp, SupercomParameter)
+
+    result = sp.build(SAMPLE_DATA[word_size])
+
+    assert result.shape[0] == NUM_FRAMES
+    assert result.shape[1] == num_cols
+
+    expected = np.array([[x for x in range_]] * NUM_FRAMES)
+    assert result.tolist() == expected.tolist()

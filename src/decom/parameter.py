@@ -1,4 +1,3 @@
-import copy
 from dataclasses import dataclass, field
 from typing import Any, Callable, Literal, Optional, Union
 
@@ -31,16 +30,10 @@ class FragmentWord(Fragment):
 
     one_based: bool = True
 
-    _idx: int = field(init=False, repr=False)
     _mask_shift: list[tuple[int, int]] = field(init=False, repr=False)
-    _size: int = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        self._idx = self.word - int(self.one_based)
-
         if self.bits is not None:
-            self._size = len(self.bits)
-
             self._bit_ranges = utils.bit_list_to_ranges(self.bits)
             self._mask_shift = []
             for bit_range in self._bit_ranges:
@@ -58,26 +51,10 @@ class FragmentWord(Fragment):
         else:
             s = f"{self.word}"
 
-        if self.complement:
-            s = "~" + s
-
-        if self.reverse:
-            s = s + "R"
+        s = "~" if self.complement else "" + s
+        s = s + "R" if self.reverse else ""
 
         return s
-
-    # def size(self) -> int:
-    #     try:
-    #         return self._size
-    #     except AttributeError as err:
-    #         msg = "Fragment size is not known, probably because word_size was not specified"
-    #         raise UnknownSizeException(msg) from err
-
-    # def _calculate_size(self, word_size: Optional[int] = None) -> None:
-    #     if self.bits is not None:
-    #         self._size = max(self.bits) - min(self.bits) + 1
-    #     elif word_size is not None:
-    #         self._size = word_size
 
     def __eq__(self, other) -> bool:
         if isinstance(other, FragmentWord):
@@ -85,7 +62,7 @@ class FragmentWord(Fragment):
             bits_b = other.bits if other.bits is None else sorted(other.bits)
             return all(
                 [
-                    self.word == other.word,
+                    self.word - int(self.one_based) == other.word - int(self.one_based),
                     bits_a == bits_b,
                     self.complement == other.complement,
                     self.reverse == other.reverse,
@@ -93,8 +70,8 @@ class FragmentWord(Fragment):
             )
         return NotImplemented
 
-    def build(self, data: UintXArray) -> UintXArray:
-        result = data[:, self.word - int(self.one_based)].flatten()
+    def build(self, data: UintXArray, /, offset: int = 0) -> UintXArray:
+        result = data[:, self.word - int(self.one_based) + offset].flatten()
 
         if self.word_size is None:
             self.word_size = data.word_size
@@ -105,7 +82,6 @@ class FragmentWord(Fragment):
                 raise ValueError(msg)
 
             for mask, shift in self._mask_shift:
-                print("mask, shift =", mask, shift)
                 result = np.bitwise_and(result, mask)
                 result = np.bitwise_right_shift(result, shift)
 
@@ -114,13 +90,13 @@ class FragmentWord(Fragment):
             frag_size = data.word_size
 
         if self.complement:
-            # TODO: Should this really come after the bit slicing above, or should it be before???
+            # TODO: Should this really come after the fragment assemby, or should it be before???
             result = np.bitwise_and(np.invert(result), 2**frag_size - 1)
 
         if self.reverse:
             result = utils.reverse_bits(result, frag_size)
 
-        return result
+        return UintXArray(result, word_size=frag_size)
 
 
 @dataclass
@@ -224,6 +200,7 @@ class BasicParameter(Parameter):
         return s
 
     def _calculate_parameter_size(self, word_size: int) -> int:
+        """Determine the size of the parameter by adding the fragment sizes."""
         size = 0
         for frag in self.fragments:
             if isinstance(frag, FragmentConstant):
@@ -239,15 +216,29 @@ class BasicParameter(Parameter):
         return size
 
     def _all_words(self) -> list[int]:
+        """Generate a list of all the words in each Fragment"""
         return [f.word for f in self.fragments if isinstance(f, FragmentWord)]
 
     def max_word(self) -> int:
+        """Find the maximum word in all fragments"""
         return max(self._all_words())
 
     def min_word(self) -> int:
+        """Find the minimum word in all fragments"""
         return min(self._all_words())
 
-    def build(self, data: UintXArray) -> UintXArray:
+    def build(self, data: UintXArray, /, offset: int = 0) -> UintXArray:
+        """Construct the Parameter from the input data array.
+
+        Args:
+            data (UintXArray): The input data array.
+
+            offset (int): An offset applied to the fragment words. This is useful
+            for Parameters defined relative to another Parameter, e.g. for Supercom or Generator Parameters.
+
+        Returns;
+            UintXArray: The assembled Parameter vector.
+        """
         # Determine the total number of bits in the complete Parameter
         # Set the uint dtype to the minimum sized container for the Parameter size
         size = self._calculate_parameter_size(data.word_size)
@@ -271,20 +262,12 @@ class BasicParameter(Parameter):
                 result = np.left_shift(result, frag_size)
 
             # Add the fragment value
-            result += frag.build(data)
+            result += frag.build(data, offset=offset)
 
-        # TODO: Bit operations
         if self.bit_op:
             result = self.bit_op._func(result, self.bit_op.value)
 
-        return result
-
-
-@dataclass
-class SupercomParameter(Parameter):
-    parameter: BasicParameter
-    iterator: Iterator
-    word_size: Optional[int] = None
+        return UintXArray(result, word_size=size)
 
 
 @dataclass
@@ -293,63 +276,65 @@ class GeneratorParameter(Parameter):
     iterator: Iterator
     word_size: Optional[int] = None
 
-    _parameters: list[BasicParameter] = field(default_factory=list, repr=False)
-
     def __post_init__(self) -> None:
-        print(self)
-        if self.iterator.stop:
-            self._generate_parameters()
-
-    def _generate_parameters(self):
-        self._parameters = [copy.deepcopy(self.parameter)]
-        max_word = self._parameters[-1].max_word()
-        while True:
-            parameter = copy.deepcopy(self._parameters[-1])
-
-            max_word += self.iterator.step
-
-            if self.iterator.step > 0:
-                if max_word >= self.iterator.stop:
-                    break
-            elif self.iterator.step < 0:
-                if max_word <= self.iterator.stop:
-                    break
-
-            for frag in parameter.fragments:
-                frag.word += self.iterator.step
-                frag._idx += self.iterator.step
-
-            self._parameters.append(parameter)
-
-    # def _generate_parameters_up(self):
-    #     self._parameters = [copy.deepcopy(self.parameter)]
-    #     max_word = self._parameters[-1].max_word()
-    #     while max_word < self.iterator.stop:
-    #         parameter = self._parameters[-1]
-
-    #         for frag in parameter.fragments:
-    #             frag.word += self.iterator.step
-    #             frag._idx += self.iterator.step
-
-    #         max_word += self.iterator.step
-
-    # def _generate_parameters_dn(self):
-    #     self._parameters = [copy.deepcopy(self.parameter)]
-    #     max_word = self._parameters[-1].max_word()
-    #     while max_word > self.iterator.stop:
-    #         parameter = self._parameters[-1]
-
-    #         for frag in parameter.fragments:
-    #             frag.word += self.iterator.step
-    #             frag._idx += self.iterator.step
-
-    #         max_word += self.iterator.step
+        # For decrementing generators, the "stop before" must be 0
+        if self.iterator.stop is None and self.iterator.step < 0:
+            self.iterator.stop = 0
 
     def build(self, data: UintXArray) -> list[UintXArray]:
         if self.word_size is None:
             self.word_size = data.word_size
         elif self.word_size != data.word_size:
             raise ValueError
+
+        results = []
+
+        # If the iterator is positive, compare the largest word against the "stop before" limit
+        # If the iterator is negative, compare the smallest
+        if self.iterator.step > 0:
+            start = self.parameter.max_word()
+        else:
+            start = self.parameter.min_word()
+
+        # Use the "stop before" limit if it is defined
+        # If it is not defined, set the "stop before" limit based on the end of the row of data
+        if self.iterator.stop is not None:
+            stop = self.iterator.stop
+        else:
+            # If step is negative, the stop was implicitly 0 and set in __post_init__
+            stop = data.shape[1]
+
+        # Iterate through the generated parameters by using the offset
+        for target in range(start, stop, self.iterator.step):
+            offset = target - start
+            result = self.parameter.build(data, offset=offset)
+            results.append(result)
+
+        return UintXArray(results, word_size=results[0].word_size).T
+
+
+@dataclass
+class SupercomParameter(GeneratorParameter):
+    parameter: BasicParameter
+    iterator: Iterator
+    word_size: Optional[int] = None
+
+    def build(self, data: UintXArray) -> UintXArray:
+        results = super().build(data)
+        return results
+
+    # def __post_init__(self) -> None:
+    #     # For decrementing generators, the "stop before" must be 0
+    #     if self.iterator.stop is None and self.iterator.step < 0:
+    #         self.iterator.stop = 0
+
+    # def build(self, data: UintXArray) -> UintXArray:
+    #     if self.word_size is None:
+    #         self.word_size = data.word_size
+    #     elif self.word_size != data.word_size:
+    #         raise ValueError
+
+    #     results = []
 
 
 @v_args(inline=True)
