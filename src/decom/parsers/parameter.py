@@ -99,15 +99,18 @@ class ParameterTransformer(Transformer):
         ]
 
     def constant(self, token: Token) -> list[FragmentConstant]:
-        if token.type == "HEX":
+        # When merging transformers, the token.type will contain a prefix (e.g. "parameter__")
+        if "HEX" in token.type:
             size = 4 * len(token)
             value = utils.hex2dec(token)
-        elif token.type == "OCT":
+        elif "OCT" in token.type:
             size = 3 * len(token)
             value = utils.oct2dec(token)
-        elif token.type == "BIN":
+        elif "BIN" in token.type:
             size = len(token)
             value = utils.bin2dec(token)
+        else:
+            raise ValueError
         return [FragmentConstant(value, size)]
 
     def concatenate(self, *args: list[list[Any]]) -> list[Any]:
