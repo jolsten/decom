@@ -74,8 +74,8 @@ class FragmentWord(Fragment):
         else:
             s = f"{self.word}"
 
-        s = "~" if self.complement else "" + s
-        s = s + "R" if self.reverse else ""
+        s = ("~" if self.complement else "") + s
+        s = s + ("R" if self.reverse else "")
 
         return s
 
