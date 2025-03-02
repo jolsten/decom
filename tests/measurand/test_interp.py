@@ -1,7 +1,7 @@
 import pytest
 
-from decom.array import UintXArray
 from decom.measurand import Interp
+from decom.model import VarUIntArray
 
 from ..conftest import NUM_FRAMES
 
@@ -14,9 +14,9 @@ from ..conftest import NUM_FRAMES
 )
 def test_u(word_size: int, input_: int, expected: int):
     interp = Interp("u")
-    data = UintXArray([input_] * NUM_FRAMES, word_size=word_size)
+    data = VarUIntArray([[input_]] * NUM_FRAMES, word_size=word_size)
     out = interp.apply(data)
-    assert out.tolist() == [expected] * NUM_FRAMES
+    assert out.tolist() == [[expected]] * NUM_FRAMES
 
 
 @pytest.mark.parametrize(
@@ -45,6 +45,6 @@ def test_u(word_size: int, input_: int, expected: int):
 )
 def test_2c(word_size: int, input_: int, expected: int):
     interp = Interp("2c")
-    data = UintXArray([input_] * NUM_FRAMES, word_size=word_size)
+    data = VarUIntArray([[input_]] * NUM_FRAMES, word_size=word_size)
     out = interp.apply(data)
-    assert out.tolist() == [expected] * NUM_FRAMES
+    assert out.tolist() == [[expected]] * NUM_FRAMES

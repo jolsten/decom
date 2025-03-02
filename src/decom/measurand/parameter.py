@@ -6,7 +6,7 @@ import numpy as np
 from lark import Token, Transformer, v_args
 
 from decom import utils
-from decom.array import UintXArray
+from decom.model import VarUIntArray
 
 
 class UnknownSizeException(ValueError):
@@ -17,7 +17,7 @@ class Fragment(abc.ABC):
     complement: bool
     reverse: bool
 
-    def build(self, data: UintXArray, /, offset: int = 0) -> UintXArray:
+    def build(self, data: VarUIntArray, /, offset: int = 0) -> VarUIntArray:
         """Build the specified Fragment.
 
         Notes
@@ -34,7 +34,7 @@ class Fragment(abc.ABC):
 
         Returns
         -------
-        UintXArray
+        VarUIntArray
             The constructed fragment.
         """
 
@@ -94,7 +94,7 @@ class FragmentWord(Fragment):
         return NotImplemented
 
     @override
-    def build(self, data: UintXArray, /, offset: int = 0) -> UintXArray:
+    def build(self, data: VarUIntArray, /, offset: int = 0) -> VarUIntArray:
         result = data[:, self.word - int(self.one_based) + offset].flatten()
 
         if self.word_size is None:
@@ -120,7 +120,7 @@ class FragmentWord(Fragment):
         if self.reverse:
             result = utils.reverse_bits(result, frag_size)
 
-        return UintXArray(result, word_size=frag_size)
+        return VarUIntArray(result, word_size=frag_size)
 
 
 @dataclass
@@ -169,8 +169,8 @@ class FragmentConstant(Fragment):
             self.value = utils.reverse_bits(self.value, self.size)
 
     @override
-    def build(self, data: UintXArray) -> UintXArray:
-        return UintXArray(self.value, word_size=self.size)
+    def build(self, data: VarUIntArray) -> VarUIntArray:
+        return VarUIntArray(self.value, word_size=self.size)
 
 
 @dataclass
@@ -252,17 +252,17 @@ class BasicParameter(Parameter):
         """Find the minimum word in all fragments"""
         return min(self._all_words())
 
-    def build(self, data: UintXArray, /, offset: int = 0) -> UintXArray:
+    def build(self, data: VarUIntArray, /, offset: int = 0) -> VarUIntArray:
         """Construct the Parameter from the input data array.
 
         Args:
-            data (UintXArray): The input data array.
+            data (VarUIntArray): The input data array.
 
             offset (int): An offset applied to the fragment words. This is useful
             for Parameters defined relative to another Parameter, e.g. for Supercom or Generator Parameters.
 
         Returns;
-            UintXArray: The assembled Parameter vector.
+            VarUIntArray: The assembled Parameter vector.
         """
         # Determine the total number of bits in the complete Parameter
         # Set the uint dtype to the minimum sized container for the Parameter size
@@ -286,7 +286,7 @@ class BasicParameter(Parameter):
         if self.bit_op:
             result = self.bit_op._func(result, self.bit_op.value)
 
-        return UintXArray(result, word_size=size)
+        return VarUIntArray(result, word_size=size)
 
 
 @dataclass
@@ -300,7 +300,7 @@ class GeneratorParameter(Parameter):
         if self.iterator.stop is None and self.iterator.step < 0:
             self.iterator.stop = 0
 
-    def build(self, data: UintXArray) -> list[UintXArray]:
+    def build(self, data: VarUIntArray) -> list[VarUIntArray]:
         if self.word_size is None:
             self.word_size = data.word_size
         elif self.word_size != data.word_size:
@@ -329,7 +329,7 @@ class GeneratorParameter(Parameter):
             result = self.parameter.build(data, offset=offset)
             results.append(result)
 
-        return UintXArray(results, word_size=results[0].word_size).T
+        return VarUIntArray(results, word_size=results[0].word_size).T
 
 
 @dataclass
@@ -338,7 +338,7 @@ class SupercomParameter(GeneratorParameter):
     iterator: Iterator
     word_size: Optional[int] = None
 
-    def build(self, data: UintXArray) -> UintXArray:
+    def build(self, data: VarUIntArray) -> VarUIntArray:
         results = super().build(data)
         return results
 

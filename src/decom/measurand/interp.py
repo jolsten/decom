@@ -4,7 +4,7 @@ from typing import Callable
 from numpy.typing import NDArray
 from typeconvert import ufunc
 
-from decom.array import UintXArray
+from decom.model import VarUIntArray
 
 
 class InterpFactory:
@@ -33,7 +33,7 @@ class InterpFactory:
 
 class InterpImplementation(abc.ABC):
     @abc.abstractmethod
-    def apply(self, data: UintXArray) -> NDArray: ...
+    def apply(self, data: VarUIntArray) -> NDArray: ...
 
 
 class Interp:
@@ -47,23 +47,23 @@ class Interp:
         self.mode = mode
         self._func = InterpFactory.create(self.mode)
 
-    def apply(self, data: UintXArray) -> NDArray:
+    def apply(self, data: VarUIntArray) -> NDArray:
         return self._func.apply(data)
 
 
 @InterpFactory.register("u")
 class UnsignedInt(InterpImplementation):
-    def apply(self, data: UintXArray) -> UintXArray:
+    def apply(self, data: VarUIntArray) -> VarUIntArray:
         return data
 
 
 @InterpFactory.register("1c")
 class OnesComplement(InterpImplementation):
-    def apply(self, data: UintXArray) -> NDArray:
+    def apply(self, data: VarUIntArray) -> NDArray:
         return ufunc.onescomp(data, data.word_size)
 
 
 @InterpFactory.register("2c")
 class TwosComplement(InterpImplementation):
-    def apply(self, data: UintXArray) -> NDArray:
+    def apply(self, data: VarUIntArray) -> NDArray:
         return ufunc.twoscomp(data, data.word_size)

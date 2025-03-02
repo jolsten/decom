@@ -41,10 +41,11 @@ from ..conftest import NUM_FRAMES, SAMPLE_DATA
 )
 def test_fragment_word_build(word_size: int, frag: FragmentWord, expected: int):
     data = SAMPLE_DATA[word_size]
-    out = frag.build(data)
+    print("data =", data)
     print("frag =", frag)
-    print("out =", out)
     print("expected =", expected)
+    out = frag.build(data)
+    print("out =", out)
     assert out.tolist() == [expected] * NUM_FRAMES
 
 
